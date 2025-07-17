@@ -5,6 +5,7 @@ import BasicTables from '../pages/Tables/BasicTables/BasicTables';
 import ListTables from '../pages/Tables/ListTables/ListTables';
 import ReactTable from "../pages/Tables/ReactTables";
 
+ import Dashboard from '../pages/Dashboard';
 
 
 //Settings
@@ -51,6 +52,8 @@ import Madrassas from "../pages/settings/Madrassa";
 // import Register from "../pages/Authentication/Register";
 const authProtectedRoutes = [
 
+
+  { path: "/dashboard", component: <Dashboard /> },
 
   //Tables
   { path: "/tables-basic", component: <BasicTables /> },
