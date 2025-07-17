@@ -26,8 +26,8 @@ const LessonsPage = () => {
     teacher: '',
     surah: '',
     status: '',
-    startDate: moment().startOf('month').format('YYYY-MM-DD'),
-    endDate: moment().endOf('month').format('YYYY-MM-DD'),
+    startDate: moment().format('YYYY-MM-DD'),
+    endDate: moment().format('YYYY-MM-DD'),
     isConcluded: ''
   });
   const [modal, setModal] = useState({
@@ -49,13 +49,12 @@ const LessonsPage = () => {
       status: 'completed'
     }
   });
+  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
 
   // Status options
   const statusOptions = [
     { value: 'completed', label: 'Completed', color: 'success' },
-    { value: 'in-progress', label: 'In Progress', color: 'warning' },
-    { value: 'pending', label: 'Pending', color: 'info' },
-    { value: 'cancelled', label: 'Cancelled', color: 'danger' }
+    { value: 'repeated', label: 'repeated', color: 'danger' }
   ];
 
   // Fetch initial data
@@ -65,7 +64,8 @@ const LessonsPage = () => {
       // Fetch students
       const studentsRes = await fetch(`${API_URL.API_URL}/students`);
       const studentsData = await studentsRes.json();
-      setStudents(studentsData.data.map(s => ({
+      setStudents(studentsData.data .filter(student => student.isActive) // Only include active students
+        .map(s => ({
         value: s._id,
         label: s.name,
         ...s
@@ -178,7 +178,7 @@ const LessonsPage = () => {
         data: {
           lessonDate: moment().format('YYYY-MM-DD'),
           student: '',
-          teacher: '',
+          teacher: authUser?.data?.user._id,
           surah_number: '',
           surah_name: '',
           from_ayah: '',
@@ -199,7 +199,7 @@ const LessonsPage = () => {
           ...lesson,
           from_ayah: lesson.from_ayah,
           student: lesson?.student?._id,
-          teacher: lesson?.teacher?._id,
+          teacher: authUser?.data?.user._id,
           lessonDate: moment(lesson.lessonDate).format('YYYY-MM-DD')
         }
       });
@@ -319,6 +319,24 @@ const isLastAyah = () => {
   const lastAyah = ayahs[ayahs.length - 1].value;
   return modal.data.to_ayah === lastAyah;
 };
+useEffect(() => {
+  if (
+    modal.data?.surah_number &&
+    modal.data?.to_ayah &&
+    ayahs.length
+  ) {
+    const lastAyah = ayahs[ayahs.length - 1].value;
+    const shouldBeConcluded = modal.data.to_ayah === lastAyah;
+
+    if (modal.data.is_concluded !== shouldBeConcluded) {
+      setModal(prev => ({
+        ...prev,
+        data: { ...prev.data, is_concluded: shouldBeConcluded }
+      }));
+    }
+  }
+}, [modal.data?.to_ayah, modal.data?.surah_number, ayahs]);
+
 
 
   return (
@@ -369,7 +387,7 @@ const isLastAyah = () => {
                       placeholder="All students"
                     />
                   </Col>
-                  <Col md={2}>
+                  {/* <Col md={2}>
                     <Label>Teacher</Label>
                     <Select
                       options={teachers}
@@ -378,7 +396,7 @@ const isLastAyah = () => {
                       isClearable
                       placeholder="All teachers"
                     />
-                  </Col>
+                  </Col> */}
                   <Col md={2}>
                     <Label>Surah</Label>
                     <Select
@@ -399,9 +417,18 @@ const isLastAyah = () => {
                       placeholder="All statuses"
                     />
                   </Col>
+                    <Col md={2} className="d-flex align-items-end">
+                    <Button 
+                      color="primary" 
+                      onClick={fetchLessons}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? <Spinner size="sm" /> : 'Filter'}
+                    </Button>
+                  </Col>
                 </Row>
                 <Row className="mb-3">
-                  <Col md={2}>
+                  {/* <Col md={2}>
                     <Label>Concluded</Label>
                     <Input
                       type="select"
@@ -413,16 +440,8 @@ const isLastAyah = () => {
                       <option value="true">Yes</option>
                       <option value="false">No</option>
                     </Input>
-                  </Col>
-                  <Col md={2} className="d-flex align-items-end">
-                    <Button 
-                      color="primary" 
-                      onClick={fetchLessons}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? <Spinner size="sm" /> : 'Filter'}
-                    </Button>
-                  </Col>
+                  </Col> */}
+                
                 </Row>
                 
                 <div className="table-responsive">
@@ -432,7 +451,7 @@ const isLastAyah = () => {
                         <th>SQN</th>
                         <th>Date</th>
                         <th>Student</th>
-                        <th>Teacher</th>
+                        {/* <th>Teacher</th> */}
                         <th>Surah</th>
                         <th>Verses</th>
                         <th>Status</th>
@@ -447,7 +466,7 @@ const isLastAyah = () => {
                             <td>{++index}</td>
                             <td>{moment(lesson.lessonDate).format('MMM D, YYYY')}</td>
                             <td>{lesson.student?.name || 'N/A'}</td>
-                            <td>{lesson.teacher?.name || 'N/A'}</td>
+                            {/* <td>{lesson.teacher?.name || 'N/A'}</td> */}
                             <td>
                               {lesson.surah_number}. {lesson.surah_name}
                             </td>
@@ -553,7 +572,7 @@ const isLastAyah = () => {
                   />
                 </FormGroup>
               </Col>
-              <Col md={6}>
+              {/* <Col md={6}>
                 <FormGroup>
                   <Label>Teacher <span className="text-danger">*</span></Label>
                   <Select
@@ -568,8 +587,8 @@ const isLastAyah = () => {
                     required
                   />
                 </FormGroup>
-              </Col>
-              <Col md={6}>
+              </Col> */}
+              <Col md={4}>
                 <FormGroup>
                   <Label>Surah <span className="text-danger">*</span></Label>
                   <Select
@@ -582,7 +601,7 @@ const isLastAyah = () => {
                   />
                 </FormGroup>
               </Col>
-              <Col md={6}>
+              <Col md={4}>
                 <FormGroup>
                   <Label>From Ayah <span className="text-danger">*</span></Label>
                   <Select
@@ -595,7 +614,7 @@ const isLastAyah = () => {
                   />
                 </FormGroup>
               </Col>
-              <Col md={6}>
+              <Col md={4}>
                 <FormGroup>
                   <Label>To Ayah <span className="text-danger">*</span></Label>
                   <Select
@@ -614,15 +633,15 @@ const isLastAyah = () => {
                     <Input
                         type="checkbox"
                         name="is_concluded"
-                        checked={modal.data?.is_concluded || isLastAyah()}
-                        onChange={(e) => {
-                        if (!isLastAyah()) {
-                            setModal(prev => ({
-                            ...prev,
-                            data: { ...prev.data, is_concluded: e.target.checked }
-                            }));
-                        }
-                        }}
+                        checked={modal.data?.is_concluded || false}
+                        // onChange={(e) => {
+                        // if (!isLastAyah()) {
+                        //     setModal(prev => ({
+                        //     ...prev,
+                        //     data: { ...prev.data, is_concluded: e.target.checked }
+                        //     }));
+                        // }
+                        // }}
                         className="me-2"
                         style={{ width: '18px', height: '18px' }}
                         disabled

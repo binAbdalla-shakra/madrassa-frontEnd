@@ -23,8 +23,8 @@ const AttendancePage = () => {
     student: '',
     teacher: '',
     status: '',
-    startDate: moment().startOf('month').format('YYYY-MM-DD'),
-    endDate: moment().endOf('month').format('YYYY-MM-DD')
+    startDate: moment().format('YYYY-MM-DD'),
+    endDate: moment().format('YYYY-MM-DD')
   });
   const [modal, setModal] = useState({
     isOpen: false,
@@ -61,11 +61,15 @@ const AttendancePage = () => {
     //   if (studentsData.success) {
        
     //   }
- setStudents(studentsData.data.map(s => ({
-          value: s._id,
-          label: s.name,
-          ...s
-        })));
+setStudents(
+  studentsData.data
+    .filter(student => student.isActive) // Only include active students
+    .map(s => ({
+      value: s._id,
+      label: s.name,
+      ...s
+    }))
+);
       // Fetch teachers
       const teachersRes = await fetch(`${API_URL.API_URL}/teachers`);
       const teachersData = await teachersRes.json();
@@ -190,7 +194,7 @@ const AttendancePage = () => {
       )
     }));
   };
-
+   const authUser = JSON.parse(sessionStorage.getItem("authUser"));
   // Submit single attendance
   const handleSubmitSingle = async (e) => {
     e.preventDefault();
@@ -205,7 +209,7 @@ const AttendancePage = () => {
         body: JSON.stringify({
           date: modal.data.date,
           student_id: modal.data.student,
-          teacher_id: modal.data.teacher,
+          teacher_id: authUser?.data?.user._id,
           status: modal.data.status,
           notes: modal.data.notes
         })
@@ -240,7 +244,7 @@ const AttendancePage = () => {
         },
         body: JSON.stringify({
           date: bulkData.date,
-          teacher_id: bulkData.teacher,
+          teacher_id: authUser?.data?.user._id,
           attendance_data: bulkData.records
         })
       });
@@ -357,7 +361,7 @@ const AttendancePage = () => {
                       placeholder="All students"
                     />
                   </Col>
-                  <Col md={2}>
+                  {/* <Col md={2}>
                     <Label>Teacher</Label>
                     <Select
                       options={teachers}
@@ -366,7 +370,7 @@ const AttendancePage = () => {
                       isClearable
                       placeholder="All teachers"
                     />
-                  </Col>
+                  </Col> */}
                   <Col md={2}>
                     <Label>Status</Label>
                     <Select
@@ -395,10 +399,10 @@ const AttendancePage = () => {
                         <th>SQN</th>
                         <th>Date</th>
                         <th>Student</th>
-                        <th>Teacher</th>
+                        {/* <th>Teacher</th> */}
                         <th>Status</th>
                         <th>Notes</th>
-                        <th>Actions</th>
+                        {/* <th>Actions</th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -408,14 +412,14 @@ const AttendancePage = () => {
                             <td>{++index}</td>
                             <td>{moment(record.date).format('MMM D, YYYY')}</td>
                             <td>{record.student?.name || 'N/A'}</td>
-                            <td>{record.teacher?.name || 'N/A'}</td>
+                            {/* <td>{record.teacher?.name || 'N/A'}</td> */}
                             <td>
                               <Badge color={statusOptions.find(s => s.value === record.status)?.color || 'secondary'}>
                                 {record.status}
                               </Badge>
                             </td>
                             <td>{record.notes || '-'}</td>
-                            <td>
+                            {/* <td>
                               <Button 
                                 color="light" 
                                 size="sm"
@@ -424,7 +428,7 @@ const AttendancePage = () => {
                               >
                                 Toggle Status
                               </Button>
-                            </td>
+                            </td> */}
                           </tr>
                         ))
                       ) : (
@@ -484,7 +488,7 @@ const AttendancePage = () => {
                 required
               />
             </FormGroup>
-            <FormGroup>
+            {/* <FormGroup style={{display:"none"}}>
               <Label>Teacher</Label>
               <Select
                 options={teachers}
@@ -495,9 +499,9 @@ const AttendancePage = () => {
                 }))}
                 isClearable
                 placeholder="Select teacher"
-                required
+                // required
               />
-            </FormGroup>
+            </FormGroup> */}
             <FormGroup>
               <Label>Status</Label>
               <Input
@@ -542,7 +546,7 @@ const AttendancePage = () => {
         <Form onSubmit={handleSubmitBulk}>
           <ModalBody>
             <Row>
-              <Col md={6}>
+              <Col md={12}>
                 <FormGroup>
                   <Label>Date</Label>
                   <Input
@@ -555,7 +559,7 @@ const AttendancePage = () => {
                 </FormGroup>
               </Col>
               <Col md={6}>
-                <FormGroup>
+                {/* <FormGroup style={{display:"none"}}>
                   <Label>Teacher</Label>
                   <Select
                     options={teachers}
@@ -563,9 +567,9 @@ const AttendancePage = () => {
                     onChange={(opt) => setBulkData(prev => ({ ...prev, teacher: opt?.value || '' }))}
                     isClearable
                     placeholder="Select teacher"
-                    required
+                    // required
                   />
-                </FormGroup>
+                </FormGroup> */}
               </Col>
             </Row>
             

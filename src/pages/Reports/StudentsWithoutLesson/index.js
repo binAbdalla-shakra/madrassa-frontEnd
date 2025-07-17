@@ -101,7 +101,7 @@ const StudentsWithoutLessonsPage = () => {
 
   // Initial data load
   useEffect(() => {
-    fetchGroups();
+    fetchStudentsWithoutLessons();
   }, []);
 
   return (
@@ -206,6 +206,8 @@ const StudentsWithoutLessonsPage = () => {
                           <th>#</th>
                           <th>Student Name</th>
                           <th>Group</th>
+                          <th>Teacher</th>
+                          <th>Parent</th>
                           <th>Contact</th>
                           {/* <th>Actions</th> */}
                         </tr>
@@ -216,7 +218,9 @@ const StudentsWithoutLessonsPage = () => {
                             <td>{index + 1}</td>
                             <td>{student.name}</td>
                             <td>{student.groupName || 'No group assigned'}</td>
-                            <td>{student.contact || '-'}</td>
+                            <td>{student.teacherName || '-'}</td>
+                            <td>{student.parentName || '-'}</td>
+                            <td>{student.parentContact || '-'}</td>
                             {/* <td>
                               <Button 
                                 color="info" 

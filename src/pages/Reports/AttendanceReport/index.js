@@ -24,8 +24,8 @@ const AttendanceReportPage = () => {
     student: '',
     teacher: '',
     status: '',
-    startDate: moment().startOf('month').format('YYYY-MM-DD'),
-    endDate: moment().endOf('month').format('YYYY-MM-DD')
+    startDate: moment().format('YYYY-MM-DD'),
+    endDate: moment().format('YYYY-MM-DD')
   });
   const [summaryData, setSummaryData] = useState(null);
   const [detailData, setDetailData] = useState(null);
@@ -50,7 +50,7 @@ const AttendanceReportPage = () => {
       if (studentsData.success) {
         setStudents(studentsData.data.map(s => ({
           value: s._id,
-          label: `${s.name} (${s.class || 'No Class'})`,
+          label: s.name,
           ...s
         })));
       }
@@ -252,7 +252,7 @@ const AttendanceReportPage = () => {
               />
             </FormGroup>
           </Col>
-          <Col md={2}>
+          {/* <Col md={2}>
             <FormGroup>
               <Label>Teacher</Label>
               <Select
@@ -263,7 +263,7 @@ const AttendanceReportPage = () => {
                 placeholder="All teachers"
               />
             </FormGroup>
-          </Col>
+          </Col> */}
           <Col md={2}>
             <FormGroup>
               <Label>Status</Label>
@@ -462,8 +462,8 @@ const AttendanceReportPage = () => {
                                 <th>SQN</th>
                               <th>Date</th>
                               <th>Student</th>
-                              <th>Class</th>
-                              <th>Teacher</th>
+                              {/* <th>Class</th>
+                              <th>Teacher</th> */}
                               <th>Status</th>
                               <th>Notes</th>
                             </tr>
@@ -475,8 +475,8 @@ const AttendanceReportPage = () => {
                                     <td>{++index}</td>
                                   <td>{moment(record.date).format('MMM D, YYYY')}</td>
                                   <td>{record.student?.name || 'N/A'}</td>
-                                  <td>{record.student?.class || '-'}</td>
-                                  <td>{record.teacher?.name || 'N/A'}</td>
+                                  {/* <td>{record.student?.class || '-'}</td>
+                                  <td>{record.teacher?.name || 'N/A'}</td> */}
                                   <td>
                                     <Badge color={statusOptions.find(s => s.value === record.status)?.color || 'secondary'}>
                                       {record.status}

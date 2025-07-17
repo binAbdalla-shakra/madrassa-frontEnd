@@ -26,8 +26,8 @@ const LessonReportPage = () => {
     status: '',
     surahNumber: '',
     isConcluded: '',
-    startDate: moment().startOf('month').format('YYYY-MM-DD'),
-    endDate: moment().endOf('month').format('YYYY-MM-DD'),
+    startDate: moment().format('YYYY-MM-DD'),
+    endDate: moment().format('YYYY-MM-DD'),
     checkDate: moment().format('YYYY-MM-DD'),
 
   });
@@ -40,8 +40,7 @@ const LessonReportPage = () => {
   // Status options
   const statusOptions = [
     { value: 'completed', label: 'Completed', color: 'success' },
-    { value: 'pending', label: 'Pending', color: 'warning' },
-    { value: 'cancelled', label: 'Cancelled', color: 'danger' }
+    { value: 'repeated', label: 'repeated', color: 'danger' }
   ];
 
   // Conclusion options
@@ -58,9 +57,11 @@ const LessonReportPage = () => {
       const studentsRes = await fetch(`${API_URL.API_URL}/students`);
       const studentsData = await studentsRes.json();
       if (studentsData.success) {
-        setStudents(studentsData.data.map(s => ({
+        setStudents(studentsData.data
+           .filter(student => student.isActive) // Only include active students
+          .map(s => ({
           value: s._id,
-          label: `${s.name} (${s.class || 'No Class'})`,
+          label: s.name,
           ...s
         })));
       }
@@ -136,19 +137,19 @@ const LessonReportPage = () => {
   };
 
   // Fetch students without lessons
-  const fetchStudentsWithoutLessons = async () => {
-    try {
-      const response = await fetch(
-        `${API_URL.API_URL}/reports/students-without-lessons?date=${filters.checkDate}`
-      );
-      const data = await response.json();
-      if (data.success) {
-        setStudentsWithoutLessons(data.data);
-      }
-    } catch (error) {
-      toast.error("Error fetching students without lessons: " + error.message);
-    }
-  };
+  // const fetchStudentsWithoutLessons = async () => {
+  //   try {
+  //     const response = await fetch(
+  //       `${API_URL.API_URL}/reports/students-without-lessons?date=${filters.checkDate}`
+  //     );
+  //     const data = await response.json();
+  //     if (data.success) {
+  //       setStudentsWithoutLessons(data.data);
+  //     }
+  //   } catch (error) {
+  //     toast.error("Error fetching students without lessons: " + error.message);
+  //   }
+  // };
 
   // Handle filter changes
   const handleFilterChange = (e) => {
@@ -188,7 +189,7 @@ const LessonReportPage = () => {
   // Initial data load
   useEffect(() => {
     fetchInitialData();
-    fetchStudentsWithoutLessons();
+    // fetchStudentsWithoutLessons();
   }, []);
 
   // Chart data for summary
@@ -196,7 +197,7 @@ const LessonReportPage = () => {
     if (!summaryData) return null;
 
     return {
-      labels: ['Completed', 'Pending', 'Cancelled'],
+      labels: ['Completed','repeated'],
       datasets: [
         {
           label: 'Lesson Status Distribution',
@@ -207,7 +208,7 @@ const LessonReportPage = () => {
           ],
           backgroundColor: [
             '#28a745',
-            '#ffc107',
+            '#dc3545',
             '#dc3545'
           ],
           borderWidth: 1
@@ -283,7 +284,7 @@ const LessonReportPage = () => {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md={2}>
+                  {/* <Col md={2}>
                     <FormGroup>
                       <Label>Teacher</Label>
                       <Select
@@ -294,8 +295,8 @@ const LessonReportPage = () => {
                         placeholder="All teachers"
                       />
                     </FormGroup>
-                  </Col>
-                  <Col md={2} style={{display:"none"}}>
+                  </Col> */}
+                  <Col md={2} >
                     <FormGroup>
                       <Label>Status</Label>
                       <Select
@@ -307,7 +308,7 @@ const LessonReportPage = () => {
                       />
                     </FormGroup>
                   </Col>
-                  <Col md={2}>
+                  {/* <Col md={2}>
                     <FormGroup>
                       <Label>Surah Number</Label>
                       <Input
@@ -320,7 +321,7 @@ const LessonReportPage = () => {
                         max="114"
                       />
                     </FormGroup>
-                  </Col>
+                  </Col> */}
                      <Col md={2} className="d-flex align-items-end mb-3">
                     <Button 
                       color="primary" 
@@ -418,8 +419,8 @@ const LessonReportPage = () => {
 
                               </div>
                               <div className="d-flex justify-content-between mb-3">
-                                <span>Pending:</span>
-                             <strong className="text-warning">
+                                <span>Repeated:</span>
+                             <strong className="text-danger">
   {summaryData.pendingLessons} ({Math.round((summaryData.pendingLessons / summaryData.totalLessons) * 100) || 0}%)
 </strong>
 
@@ -523,8 +524,8 @@ const LessonReportPage = () => {
                               <th>#</th>
                               <th>Date</th>
                               <th>Student</th>
-                              <th>Class</th>
-                              <th>Teacher</th>
+                              {/* <th>Class</th> */}
+                              {/* <th>Teacher</th> */}
                               <th>Surah</th>
                               <th>Ayahs</th>
                               <th>Status</th>
@@ -538,8 +539,8 @@ const LessonReportPage = () => {
                                   <td>{index + 1}</td>
                                   <td>{moment(lesson.lessonDate).format('MMM D, YYYY')}</td>
                                   <td>{lesson.student?.name || 'N/A'}</td>
-                                  <td>{lesson.student?.class || '-'}</td>
-                                  <td>{lesson.teacher?.name || 'N/A'}</td>
+                                  {/* <td>{lesson.student?.class || '-'}</td> */}
+                                  {/* <td>{lesson.teacher?.name || 'N/A'}</td> */}
                                   <td>{lesson.surah_number}. {lesson.surah_name}</td>
                                   <td>{lesson.from_ayah}-{lesson.to_ayah}</td>
                                   <td>
@@ -584,7 +585,7 @@ const LessonReportPage = () => {
         </TabContent>
 
         {/* Students Without Lessons Section */}
-        <Row className="mt-4">
+        {/* <Row className="mt-4">
           <Col lg={12}>
             <Card className="default-card-wrapper">
               <CardHeader>
@@ -648,7 +649,7 @@ const LessonReportPage = () => {
               </CardBody>
             </Card>
           </Col>
-        </Row>
+        </Row> */}
       </Container>
       <ToastContainer limit={1} closeButton={false} />
     </div>

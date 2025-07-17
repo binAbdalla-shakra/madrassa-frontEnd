@@ -13,6 +13,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import BreadCrumb from "../../../Components/Common/BreadCrumb";
 import DeleteModal from "../../../Components/Common/DeleteModal";
 import Loader from "../../../Components/Common/Loader";
+
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 import { api } from "../../../config";
 
 const Students = () => {
@@ -25,6 +29,10 @@ const Students = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [uploadModal, setUploadModal] = useState(false);
+const [excelData, setExcelData] = useState([]);
+const [previewData, setPreviewData] = useState([]);
+const [uploadProgress, setUploadProgress] = useState(0);
   
   // Filters state
   const [filters, setFilters] = useState({
@@ -56,6 +64,105 @@ const Students = () => {
     { value: "true", label: "Active" },  // Changed to string "true"
     { value: "false", label: "Inactive" } // Changed to string "false"
   ];
+
+  const downloadSampleExcel = () => {
+  const sampleData = [
+    {
+      name: "Student 1",
+      gender: "Male",
+      birthdate: "2010-05-15",
+      address: "123 Main St",
+      parentContactNumber: "+252615960707",
+      // registrationNumber: "REG001",
+      monthlyFee: 20,
+      isActive: "true"
+    },
+    {
+      name: "Student 2",
+      gender: "Female",
+      birthdate: "2011-08-22",
+      address: "456 Oak Ave",
+      parentContactNumber: "+252615960707",
+      // registrationNumber: "REG002",
+      monthlyFee: 20,
+      isActive: "true"
+    }
+  ];
+
+  const worksheet = XLSX.utils.json_to_sheet(sampleData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  saveAs(data, "students_sample.xlsx");
+};
+const handleFileUpload = (e) => {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    const data = new Uint8Array(e.target.result);
+    const workbook = XLSX.read(data, { type: 'array' });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    
+    setExcelData(jsonData);
+    setPreviewData(jsonData.slice(0, 5)); // Show first 5 rows for preview
+  };
+
+  reader.readAsArrayBuffer(file);
+};
+
+const handleBulkUpload = async () => {
+  if (excelData.length === 0) {
+    toast.warning("No data to upload");
+    return;
+  }
+
+  try {
+    setUploadProgress(0);
+    const authUser = JSON.parse(sessionStorage.getItem("authUser"));
+    const madrassaId = authUser?.data?.user?.madrassaId;
+    const createdBy = authUser?.data?.user?.username || "Admin";
+
+    // Process in chunks for better performance
+    const chunkSize = 10;
+    const totalChunks = Math.ceil(excelData.length / chunkSize);
+    let successfulUploads = 0;
+
+    for (let i = 0; i < excelData.length; i += chunkSize) {
+      const chunk = excelData.slice(i, i + chunkSize);
+      
+      const response = await fetch(`${api.API_URL}/students/bulk-import`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          studentsData: chunk,
+          madrassaId,
+          createdBy
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to upload chunk ${i / chunkSize + 1}`);
+      }
+
+      successfulUploads += chunk.length;
+      setUploadProgress(Math.round(((i + chunkSize) / excelData.length) * 100));
+    }
+
+    toast.success(`Successfully uploaded students`);
+    setUploadModal(false);
+    fetchStudents(); // Refresh the student list
+  } catch (error) {
+    toast.error(`Error during bulk upload: ${error.message}`);
+  } finally {
+    setUploadProgress(0);
+  }
+};
+
 
   // Fetch students with filters
   const fetchStudents = async () => {
@@ -410,12 +517,25 @@ const Students = () => {
 
         {/* Data Table */}
         <Card>
-          <CardHeader className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">Student List</h5>
-            <Button color="primary" onClick={handleCreate}>
-              <i className="ri-add-line me-1" /> Add Student
-            </Button>
-          </CardHeader>
+<CardHeader className="d-flex justify-content-between align-items-center">
+  <h5 className="mb-0">Student List</h5>
+  <div>
+    <Button color="secondary" className="me-2" onClick={downloadSampleExcel}>
+      <i className="ri-download-line me-1" /> Download Sample
+    </Button>
+    <Button color="info" className="me-2" onClick={() => {setUploadModal(true);
+    setExcelData([]);       // Clear any previously loaded Excel data
+    setPreviewData([]);     // Clear the preview data
+    setUploadProgress(0);   // Reset progress
+
+    } }>
+      <i className="ri-upload-line me-1" /> Upload Students
+    </Button>
+    <Button color="primary" onClick={handleCreate}>
+      <i className="ri-add-line me-1" /> Add Student
+    </Button>
+  </div>
+</CardHeader>
           <CardBody>
             {loading ? (
               <Loader />
@@ -531,6 +651,81 @@ const Students = () => {
           </ModalFooter>
         </Form>
       </Modal>
+
+      // Add this modal component (with your other modals)
+<Modal isOpen={uploadModal} toggle={() => setUploadModal(false)} size="xl">
+  <ModalHeader toggle={() => setUploadModal(false)}>
+    Upload Students from Excel
+  </ModalHeader>
+  <ModalBody>
+    <FormGroup>
+      <Label>Select Excel File</Label>
+      <Input
+        type="file"
+        accept=".xlsx, .xls"
+        onChange={handleFileUpload}
+      />
+      <small className="text-muted">
+        File should match the sample format. Max 1000 rows.
+      </small>
+    </FormGroup>
+
+    {previewData.length > 0 && (
+      <>
+        <h5 className="mt-4">Preview (First 5 Rows)</h5>
+        <div className="table-responsive">
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                {Object.keys(previewData[0]).map(key => (
+                  <th key={key}>{key}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {previewData.map((row, i) => (
+                <tr key={i}>
+                  {Object.values(row).map((val, j) => (
+                    <td key={j}>{val?.toString() || ''}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-3">
+          <strong>Total Rows to Import:</strong> {excelData.length}
+        </div>
+      </>
+    )}
+  </ModalBody>
+  <ModalFooter>
+    {uploadProgress > 0 && (
+      <div className="progress w-100 mb-3">
+        <div
+          className="progress-bar"
+          role="progressbar"
+          style={{ width: `${uploadProgress}%` }}
+          aria-valuenow={uploadProgress}
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          {uploadProgress}%
+        </div>
+      </div>
+    )}
+    <Button color="light" onClick={() => setUploadModal(false)}>
+      Cancel
+    </Button>
+    <Button 
+      color="primary" 
+      onClick={handleBulkUpload}
+      disabled={excelData.length === 0 || uploadProgress > 0}
+    >
+      {uploadProgress > 0 ? 'Uploading...' : 'Upload Students'}
+    </Button>
+  </ModalFooter>
+</Modal>
 
       {/* Delete Confirmation Modal */}
       <DeleteModal
