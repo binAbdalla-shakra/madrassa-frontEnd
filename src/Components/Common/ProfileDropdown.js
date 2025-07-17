@@ -5,7 +5,8 @@ import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'reactstrap
 import { createSelector } from 'reselect';
 
 //import images
-import avatar1 from "../../assets/images/users/avatar-1.jpg";
+import avatar1 from "../../assets/images/albasair.png";
+
 
 const ProfileDropdown = () => {
 
@@ -23,9 +24,9 @@ const ProfileDropdown = () => {
 
     useEffect(() => {
         if (sessionStorage.getItem("authUser")) {
-            const obj = JSON.parse(sessionStorage.getItem("authUser"));
-            // console.log("user data is:",obj.data.user.username);
-            const username = obj.data.user.username;
+            const userData = JSON.parse(sessionStorage.getItem("authUser"));
+            // console.log("user data is:",obj);
+            const username = userData?.data?.user?.username;
             setUserName(  username  );
         }
     }, [userName, user]);
@@ -51,7 +52,7 @@ const ProfileDropdown = () => {
                 <DropdownMenu className="dropdown-menu-end">
                     <h6 className="dropdown-header">Welcome {userName}!</h6>
                     <DropdownItem className='p-0'>
-                        <Link to="/profile" className="dropdown-item">
+                        <Link to="/setting-madrassa" className="dropdown-item">
                             <i className="mdi mdi-account-circle text-muted fs-16 align-middle me-1"></i>
                             <span className="align-middle">Profile</span>
                         </Link>

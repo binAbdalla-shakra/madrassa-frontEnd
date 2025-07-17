@@ -199,11 +199,11 @@ export const addNewMadrassa = createAsyncThunk("settings/addNewMadrassa", async 
 export const updateMadrassa = createAsyncThunk("settings/updateMadrassa", async (madrassa, { dispatch }) => {
     try {
         const response = await updateMadrassaApi(madrassa);
-        toast.success("Madrassa Updated Successfully", { autoClose: 3000 });
+        toast.success("Madrassa profile Updated Successfully", { autoClose: 3000 });
         dispatch(getMadrassas());
         return response;
     } catch (error) {
-        toast.error("Madrassa Update Failed", { autoClose: 3000 });
+        toast.error("Madrassa profile Update Failed", { autoClose: 3000 });
         return error;
     }
 });

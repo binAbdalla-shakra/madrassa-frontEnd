@@ -51,6 +51,8 @@ const Users = () => {
   const [user, setUser] = useState(null);
   const [filterText, setFilterText] = useState("");
 const [userName, setUserName] = useState("Admin");
+const [madrassaId, setMadrassaId] = useState();
+
 
   const toggle = useCallback(() => setModal(!modal), [modal]);
   // console.log("selected Users is:",users);
@@ -59,7 +61,7 @@ const [userName, setUserName] = useState("Admin");
     initialValues: {
       username: user?.username || "",
       email: user?.email || "",
-      password: "",
+      password: user?.password || "",
       role: user?.role?._id || "0"
     },
     onSubmit: (values) => {
@@ -72,7 +74,7 @@ const [userName, setUserName] = useState("Admin");
         return;
       }
 
-      if (!isEdit && !values.password.trim()) {
+      if (!values.password.trim()) {
         toast.warn("Password is required");
         return;
       }
@@ -86,7 +88,8 @@ const [userName, setUserName] = useState("Admin");
         username: values.username,
         email: values.email,
         roleId: values.role,
-        ...(isEdit ? {} : { password: values.password }),
+        password: values.password,
+        madrassaId:madrassaId,
         
       };
       // console.log("Role id is: ",userData.roleId);
@@ -133,6 +136,8 @@ const [userName, setUserName] = useState("Admin");
      if (sessionStorage.getItem("authUser")) {
     const obj = JSON.parse(sessionStorage.getItem("authUser"));
     const username = obj?.data?.user?.username || "Admin";
+     const madrassaId = obj?.data?.user?.madrassaId;
+    setMadrassaId(madrassaId);
     setUserName(username);
   }
     dispatch(onGetUsers());
@@ -239,10 +244,12 @@ const [userName, setUserName] = useState("Admin");
         </Row>
       </Container>
 
-      <Modal isOpen={modal} toggle={toggle} centered>
+      <Modal isOpen={modal} toggle={toggle} size="lg">
         <ModalHeader toggle={toggle}>{isEdit ? "Edit User" : "Add User"}</ModalHeader>
         <Form onSubmit={validation.handleSubmit}>
           <ModalBody>
+            <Row>
+              <Col md={6}>
             <div className="mb-3">
               <Label htmlFor="username" data-key="username">Username <span className="text-danger">*</span></Label>
               <Input
@@ -256,7 +263,8 @@ const [userName, setUserName] = useState("Admin");
               />
               <FormFeedback>{validation.errors.username}</FormFeedback>
             </div>
-
+</Col>
+<Col md={6}>
             <div className="mb-3">
               <Label htmlFor="email" data-key="email">Email</Label>
               <Input
@@ -267,8 +275,11 @@ const [userName, setUserName] = useState("Admin");
                 onChange={validation.handleChange}
               />
             </div>
-
-            {!isEdit && (
+            </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+            {/* {!isEdit && ( */}
               <div className="mb-3">
                 <Label htmlFor="password" data-key="password">Password <span className="text-danger">*</span></Label>
                 <Input
@@ -281,19 +292,11 @@ const [userName, setUserName] = useState("Admin");
                 />
                 <FormFeedback>{validation.errors.password}</FormFeedback>
               </div>
-            )}
-
+            {/* )} */}
+          </Col>
+          <Col md={6}>
             <div className="mb-3">
               <Label htmlFor="role" data-key="role">Role <span className="text-danger">*</span></Label>
-              {/* <Select
-                id="role"
-                name="role"
-                classNamePrefix="select"
-                value={roles.map(r => ({ label: r.type, value: r._id })).find(opt => opt.value === validation.values.role)}
-                onChange={selected => validation.setFieldValue("role", selected.value)}
-                options={roles.map(r => ({ label: r.type, value: r._id }))}
-              /> */}
-
               <Select
                 id="role"
                 name="role"
@@ -309,6 +312,8 @@ const [userName, setUserName] = useState("Admin");
 
 
             </div>
+            </Col>
+            </Row>
           </ModalBody>
           <ModalFooter>
             <button type="button" className="btn btn-light" onClick={toggle} data-key="cancel">Cancel</button>

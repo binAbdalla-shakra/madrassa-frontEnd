@@ -7,17 +7,17 @@ import Select from 'react-select';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
-    Card, CardHeader, Col, Container, Form, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row
+  Card, CardHeader, Col, Container, Form, Input, Label, Modal, ModalBody, ModalFooter, ModalHeader, Row
 } from "reactstrap";
 import BreadCrumb from "../../../Components/Common/BreadCrumb";
 import DeleteModal from "../../../Components/Common/DeleteModal";
 import Loader from "../../../Components/Common/Loader";
 import {
-    addNewBranch as onAddNewBranch,
-    deleteBranch as onDeleteBranch,
-    getBranches as onGetBranches,
-    getMadrassas as onGetMadrassas,
-    updateBranch as onUpdateBranch
+  addNewBranch as onAddNewBranch,
+  deleteBranch as onDeleteBranch,
+  getBranches as onGetBranches,
+  getMadrassas as onGetMadrassas,
+  updateBranch as onUpdateBranch
 } from "../../../slices/thunks";
 
 const Branches = () => {
@@ -191,14 +191,20 @@ const Branches = () => {
         </Row>
       </Container>
 
-      <Modal isOpen={modal} toggle={toggle} centered>
+      <Modal isOpen={modal} toggle={toggle} size="lg">
         <ModalHeader toggle={toggle}>{isEdit ? "Edit Branch" : "Add Branch"}</ModalHeader>
         <Form onSubmit={handleSubmit}>
           <ModalBody>
+            <Row>
+            <Col md={6}>
+
             <div className="mb-3">
               <Label htmlFor="name" data-key="name">Name <span className="text-danger">*</span></Label>
-              <Input id="name" name="name" value={form.name} onChange={handleChange} />
+              <Input id="name" name="name" placeholder="name" value={form.name} onChange={handleChange} />
             </div>
+            </Col>
+              <Col md={6}>
+
             <div className="mb-3">
               <Label htmlFor="madrassaId" data-key="madrassa">Madrassa <span className="text-danger">*</span></Label>
               <Select
@@ -210,14 +216,22 @@ const Branches = () => {
                 onChange={selected => setForm({ ...form, madrassaId: selected ? selected.value : "0" })}
               />
             </div>
+             </Col>
+            </Row>
+            <Row>
+             <Col md={6}>
             <div className="mb-3">
               <Label htmlFor="address" data-key="address">Address <span className="text-danger">*</span></Label>
-              <Input id="address" name="address" value={form.address} onChange={handleChange} />
+              <Input id="address" name="address" placeholder="address" value={form.address} onChange={handleChange} />
             </div>
+            </Col>
+             <Col md={6}>
             <div className="mb-3">
               <Label htmlFor="contactNumber" data-key="contact">Contact Number <span className="text-danger">*</span></Label>
-              <Input id="contactNumber" name="contactNumber" value={form.contactNumber} onChange={handleChange} />
+              <Input id="contactNumber" name="contactNumber" placeholder="number" value={form.contactNumber} onChange={handleChange} />
             </div>
+            </Col>
+            </Row>
           </ModalBody>
           <ModalFooter>
             <button type="button" className="btn btn-light" onClick={toggle} data-key="cancel">Cancel</button>

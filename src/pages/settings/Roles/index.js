@@ -52,6 +52,8 @@ const Roles = () => {
   const [selectedCheckBoxDelete, setSelectedCheckBoxDelete] = useState([]);
   const [isMultiDeleteButton, setIsMultiDeleteButton] = useState(false);
   const [userName, setUserName] = useState("Admin");
+  const [madrassaId, setMadrassaId] = useState();
+
 
 const [filterText, setFilterText] = useState("");
 
@@ -76,6 +78,7 @@ const [filterText, setFilterText] = useState("");
         type: values.type,
         description: values.description,
         CreatedBy: userName,
+        madrassaId: madrassaId,
       };
 
       if (isEdit) {
@@ -144,6 +147,8 @@ const [filterText, setFilterText] = useState("");
     if (sessionStorage.getItem("authUser")) {
     const obj = JSON.parse(sessionStorage.getItem("authUser"));
     const username = obj?.data?.user?.username || "Admin";
+    const madrassaId = obj?.data?.user?.madrassaId;
+    setMadrassaId(madrassaId);
     setUserName(username);
   }
     dispatch(onGetRoles());
@@ -289,7 +294,7 @@ const subHeaderComponent = (
         </Row>
       </Container>
 
-      <Modal isOpen={modal} toggle={toggle} centered>
+      <Modal isOpen={modal} toggle={toggle} >
         <ModalHeader toggle={toggle}>{isEdit ? "Edit Role" : "Add Role"}</ModalHeader>
         <Form onSubmit={validation.handleSubmit}>
           <ModalBody>

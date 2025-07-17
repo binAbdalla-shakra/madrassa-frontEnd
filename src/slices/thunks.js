@@ -10,3 +10,10 @@ export * from "./auth/login/thunk";
 
 // Settings
 export * from "./Settings/thunk";
+
+
+// Academics 
+export * from "./Academics/thunk";
+
+
+export * from "./ClassManagement/thunk";

@@ -2,9 +2,8 @@ import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import SimpleBar from "simplebar-react";
 //import logo
-import logoDark from "../assets/images/logo-dark.png";
-import logoLight from "../assets/images/logo-light.png";
-import logoSm from "../assets/images/logo-sm.png";
+import madrassaLogo from "../assets/images/albasair.png";
+
 
 //Import Components
 import { Container } from "reactstrap";
@@ -38,22 +37,48 @@ const Sidebar = ({ layoutType }) => {
     <React.Fragment>
       <div className="app-menu navbar-menu">
         <div className="navbar-brand-box">
-          <Link to="/" className="logo logo-dark">
+          {/* <Link to="/" className="logo logo-dark">
             <span className="logo-sm">
               <img src={logoSm} alt="" height="22" />
             </span>
             <span className="logo-lg">
               <img src={logoDark} alt="" height="17" />
             </span>
-          </Link>
+          </Link> */}
 
           <Link to="/" className="logo logo-light">
             <span className="logo-sm">
-              <img src={logoSm} alt="" height="22" />
+              <img src={madrassaLogo} alt="" height="22" />
             </span>
-            <span className="logo-lg">
-              <img src={logoLight} alt="" height="17" />
+          <span className="logo-lg">
+             <span
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '50%',
+                width: '100px',
+                height: '100px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                boxShadow: '0 0 5px rgba(0,0,0,0.2)',
+                marginTop: '10px'
+              }}
+            >
+              <img
+                src={madrassaLogo}
+                alt="Madrassa Logo"
+                style={{
+                  height: '100%',
+                  paddingBottom: "14px",
+                  width: '100%',
+                  objectFit: 'cover'
+                }}
+              />
             </span>
+
+            </span>
+
           </Link>
           <button
             onClick={addEventListenerOnSmHoverMenu}

@@ -1,95 +1,57 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Card, CardBody, Col, Container, Form, FormFeedback, Input, Label, Row, Spinner } from 'reactstrap';
-import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
-
-//redux
+import { Button, Card, CardBody, Col, Container, Form, FormFeedback, Input, Label, Row, Spinner } from 'reactstrap';
 import { useDispatch, useSelector } from "react-redux";
-
 import { Link } from "react-router-dom";
 import withRouter from "../../Components/Common/withRouter";
-// Formik validation
 import { useFormik } from "formik";
 import * as Yup from "yup";
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 // actions
 import { loginUser } from "../../slices/thunks";
-
-import { createSelector } from 'reselect';
-import logoLight from "../../assets/images/logo-light.png";
-//import images
-
+import logoLight from "../../assets/images/madrassa-logo-one.png";
 const Login = (props) => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
+  const [passwordShow, setPasswordShow] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-    const selectLayoutState = (state) => state;
-    const loginpageData = createSelector(
-        selectLayoutState,
-        (state) => ({
-            user: null,
-            error: null,
-            loading: false,
-            errorMsg: null,
-        })
-    );
-    // Inside your component
-    const {
-        user, error, loading, errorMsg
-    } = useSelector(loginpageData);
+  // Redux user state
+  const { user, error } = useSelector(state => state.Login || {});
 
-    const [userLogin, setUserLogin] = useState([]);
-    const [passwordShow, setPasswordShow] = useState(false);
+  // Formik setup
+  const validation = useFormik({
+    initialValues: {
+      username: '',
+      password: '',
+    },
+    validationSchema: Yup.object({
+      username: Yup.string().required("Please Enter Your Username"),
+      password: Yup.string().required("Please Enter Your Password"),
+    }),
+    onSubmit: async (values) => {
+      setLoading(true);
+      try {
+        await dispatch(loginUser(values, props.router.navigate));
+        setLoading(false);
+      } catch (err) {
+        setLoading(false);
+        toast.error("Login failed. Please check your username and password.", { position: "top-right" });
+      }
+    },
+  });
 
+  // Handle Redux error changes
+  useEffect(() => {
+    if (error) {
+      toast.error(error, { position: "top-right" });
+      setLoading(false);
+    }
+  }, [error]);
 
-    useEffect(() => {
-        if (user && user) {
-            const updatedUserData = process.env.REACT_APP_DEFAULTAUTH === "firebase" ? user.multiFactor.user.email : user.email;
-            const updatedUserPassword = process.env.REACT_APP_DEFAULTAUTH === "firebase" ? "" : user.confirm_password;
-            setUserLogin({
-                email: updatedUserData,
-                password: updatedUserPassword
-            });
-        }
-    }, [user]);
+  document.title = "Madrassa";
 
-    const validation = useFormik({
-        // enableReinitialize : use this flag when initial values needs to be changed
-        enableReinitialize: true,
-
-        initialValues: {
-            email: userLogin.email || "admin@themesbrand.com" || '',
-            password: userLogin.password || "123456" || '',
-        },
-        validationSchema: Yup.object({
-            email: Yup.string().required("Please Enter Your Email"),
-            password: Yup.string().required("Please Enter Your Password"),
-        }),
-        onSubmit: (values) => {
-            dispatch(loginUser(values, props.router.navigate));
-        }
-    });
-
-    const signIn = type => {
-        dispatch(socialLogin(type, props.router.navigate));
-    };
-
-    //handleTwitterLoginResponse
-    // const twitterResponse = e => {}
-
-    //for facebook and google authentication
-    const socialResponse = type => {
-        signIn(type);
-    };
-
-
-    useEffect(() => {
-        if (errorMsg) {
-            setTimeout(() => {
-                dispatch(resetLoginFlag());
-            }, 3000);
-        }
-    }, [dispatch, errorMsg]);
-    document.title = "Basic SignIn | Velzon - React Admin & Dashboard Template";
-    return (
+   return (
         <React.Fragment>
             <ParticlesAuth>
                 <div className="auth-page-content mt-lg-5">
@@ -99,10 +61,10 @@ const Login = (props) => {
                                 <div className="text-center mt-sm-5 mb-4 text-white-50">
                                     <div>
                                         <Link to="/" className="d-inline-block auth-logo">
-                                            <img src={logoLight} alt="" height="20" />
+                                            <img src={logoLight} alt="" width="187" height="100" />
                                         </Link>
                                     </div>
-                                    <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Template</p>
+                                    <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Madrassa System</p>
                                 </div>
                             </Col>
                         </Row>
@@ -113,7 +75,7 @@ const Login = (props) => {
                                     <CardBody className="p-4">
                                         <div className="text-center mt-2">
                                             <h5 className="text-primary">Welcome Back !</h5>
-                                            <p className="text-muted">Sign in to continue to Velzon.</p>
+                                            <p className="text-muted">Sign in to continue to Madrassa.</p>
                                         </div>
                                         {error && error ? (<Alert color="danger"> {error} </Alert>) : null}
                                         <div className="p-2 mt-4">
@@ -126,21 +88,21 @@ const Login = (props) => {
                                                 action="#">
 
                                                 <div className="mb-3">
-                                                    <Label htmlFor="email" className="form-label">Email</Label>
+                                                    <Label htmlFor="username" className="form-label">username</Label>
                                                     <Input
-                                                        name="email"
+                                                        name="username"
                                                         className="form-control"
-                                                        placeholder="Enter email"
-                                                        type="email"
+                                                        placeholder="Enter username"
+                                                        type="text"
                                                         onChange={validation.handleChange}
                                                         onBlur={validation.handleBlur}
-                                                        value={validation.values.email || ""}
+                                                        value={validation.values.username || ""}
                                                         invalid={
-                                                            validation.touched.email && validation.errors.email ? true : false
+                                                            validation.touched.username && validation.errors.username ? true : false
                                                         }
                                                     />
-                                                    {validation.touched.email && validation.errors.email ? (
-                                                        <FormFeedback type="invalid">{validation.errors.email}</FormFeedback>
+                                                    {validation.touched.username && validation.errors.username ? (
+                                                        <FormFeedback type="invalid">{validation.errors.username}</FormFeedback>
                                                     ) : null}
                                                 </div>
 
@@ -181,49 +143,19 @@ const Login = (props) => {
                                                     </Button>
                                                 </div>
 
-                                                <div className="mt-4 text-center">
-                                                    <div className="signin-other-title">
-                                                        <h5 className="fs-13 mb-4 title">Sign In with</h5>
-                                                    </div>
-                                                    <div>
-                                                        <Link
-                                                            to="#"
-                                                            className="btn btn-primary btn-icon me-1"
-                                                            onClick={e => {
-                                                                e.preventDefault();
-                                                                socialResponse("facebook");
-                                                            }}
-                                                        >
-                                                            <i className="ri-facebook-fill fs-16" />
-                                                        </Link>
-                                                        <Link
-                                                            to="#"
-                                                            className="btn btn-danger btn-icon me-1"
-                                                            onClick={e => {
-                                                                e.preventDefault();
-                                                                socialResponse("google");
-                                                            }}
-                                                        >
-                                                            <i className="ri-google-fill fs-16" />
-                                                        </Link>
-                                                        <Button color="dark" className="btn-icon"><i className="ri-github-fill fs-16"></i></Button>{" "}
-                                                        <Button color="info" className="btn-icon"><i className="ri-twitter-fill fs-16"></i></Button>
-                                                    </div>
-                                                </div>
                                             </Form>
                                         </div>
                                     </CardBody>
                                 </Card>
 
-                                <div className="mt-4 text-center">
-                                    <p className="mb-0">Don't have an account ? <Link to="/register" className="fw-semibold text-primary text-decoration-underline"> Signup </Link> </p>
-                                </div>
+                              
 
                             </Col>
                         </Row>
                     </Container>
                 </div>
             </ParticlesAuth>
+            <ToastContainer/>
         </React.Fragment>
     );
 };

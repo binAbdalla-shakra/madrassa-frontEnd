@@ -1,42 +1,45 @@
 //Include Both Helper File with needed methods
 // import { getFirebaseBackend } from "../../../helpers/firebase_helper";
 import {
-  postFakeLogin
+  postLogin
 } from "../../../helpers/backend_helper";
-
+import { toast } from 'react-toastify';
 import { apiError, loginSuccess, logoutUserSuccess } from './reducer';
 
 export const loginUser = (user, history) => async (dispatch) => {
   try {
     let response;
-     if (process.env.REACT_APP_DEFAULTAUTH) {
-      response = postFakeLogin({
-        email: user.email,
+
+    if (process.env.REACT_APP_DEFAULTAUTH) {
+      response = postLogin({
+        username: user.username,
         password: user.password,
       });
     }
 
-    var data = await response;
-
-    if (data) {
+    const data = await response;
+    // console.log("response",data);
+    // console.log("status",data.status)
+    if (data.status === "error") {
+      // Show toast for server-reported error
+      toast.error(data.error || "Login failed", { position: "top-right" });
+      // dispatch(apiError(data.error || "Login failed"));
+    } else if (data.status === "success") {
+      // Success: save user, dispatch, redirect
       sessionStorage.setItem("authUser", JSON.stringify(data));
-      if (process.env.REACT_APP_DEFAULTAUTH === "fake") {
-        var finallogin = JSON.stringify(data);
-        finallogin = JSON.parse(finallogin)
-        data = finallogin.data;
-        if (finallogin.status === "success") {
-          dispatch(loginSuccess(data));
-          history('/dashboard')
-        } else {
-          dispatch(apiError(finallogin));
-        }
-      } else {
-        dispatch(loginSuccess(data));
-        history('/dashboard')
-      }
+      history('/dashboard');
+    } else {
+      // Unexpected shape of response
+      toast.error("Unexpected response from server.", { position: "top-right" });
+      dispatch(apiError("Unexpected response from server."));
     }
+
+    return data;  // ← Always return the data to caller
+
   } catch (error) {
-    dispatch(apiError(error));
+    toast.error("Network error or server unavailable.", { position: "top-right" });
+    dispatch(apiError(error.message || "Network error"));
+    return { status: "error", error: error.message || "Network error" };
   }
 };
 

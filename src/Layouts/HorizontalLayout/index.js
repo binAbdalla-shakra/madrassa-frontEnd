@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
 import PropTypes from "prop-types";
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Col, Collapse, Row } from 'reactstrap';
+import { Collapse } from 'reactstrap';
 import withRouter from '../../Components/Common/withRouter';
 
 // Import Data
@@ -122,35 +122,7 @@ const HorizontalLayout = (props) => {
                                         isOpen={item.stateVariables}
                                         id="sidebarApps">
                                         {/* subItms  */}
-                                        {item.id === "baseUi" && item.subItems.length > 13 ? (
-                                            <React.Fragment>
-                                                <Row>
-                                                    {item.subItems && ((item.subItems || []).map((subItem, key) => (
-                                                        <React.Fragment key={key}>
-                                                            {key % 2 === 0 ? (
-                                                                <Col lg={4}>
-                                                                    <ul className="nav nav-sm flex-column">
-                                                                        <li className="nav-item">
-                                                                            <Link to={item.subItems[key].link} className="nav-link">{item.subItems[key].label}</Link>
-                                                                        </li>
-                                                                    </ul>
-                                                                </Col>
-                                                            ) : (
-                                                                <Col lg={4}>
-                                                                    <ul className="nav nav-sm flex-column">
-                                                                        <li className="nav-item">
-                                                                            <Link to={item.subItems[key].link} className="nav-link">{item.subItems[key].label}</Link>
-                                                                        </li>
-                                                                    </ul>
-                                                                </Col>
-                                                            )
-                                                            }
-                                                        </React.Fragment>
-                                                    ))
-                                                    )}
-                                                </Row>
-                                            </React.Fragment>
-                                        ) : (
+                                        (
                                             <ul className="nav nav-sm flex-column test">
                                                 {item.subItems && ((item.subItems || []).map((subItem, key) => (
                                                     <React.Fragment key={key}>
@@ -226,7 +198,8 @@ const HorizontalLayout = (props) => {
                                                 ))
                                                 )}
                                             </ul>
-                                        )}
+                                        )
+                                        
                                     </Collapse>
                                 </li>
                             ) : (
@@ -242,7 +215,6 @@ const HorizontalLayout = (props) => {
                     </React.Fragment>
                 );
             })}
-            {/* menu Items */}
         </React.Fragment >
     );
 };

@@ -1,19 +1,19 @@
 import { createSlice } from "@reduxjs/toolkit";
 //constants
 import {
-  layoutTypes,
-  leftSidebarTypes,
   layoutModeTypes,
-  layoutWidthTypes,
   layoutPositionTypes,
-  topbarThemeTypes,
+  layoutTheme,
+  layoutThemeColor,
+  layoutTypes,
+  layoutWidthTypes,
   leftsidbarSizeTypes,
-  leftSidebarViewTypes,
   leftSidebarImageTypes,
+  leftSidebarTypes,
+  leftSidebarViewTypes,
   preloaderTypes,
   sidebarVisibilitytypes,
-  layoutTheme,
-  layoutThemeColor
+  topbarThemeTypes
 } from "../../Components/constants/layout";
 
 export const initialState = {
@@ -28,7 +28,7 @@ export const initialState = {
   leftsidbarSizeType: leftsidbarSizeTypes.DEFAULT,
   leftSidebarViewType: leftSidebarViewTypes.DEFAULT,
   leftSidebarImageType: leftSidebarImageTypes.NONE,
-  preloader: preloaderTypes.DISABLE,
+  preloader: preloaderTypes.ENABLE,
   sidebarVisibilitytype: sidebarVisibilitytypes.SHOW
 };
 
