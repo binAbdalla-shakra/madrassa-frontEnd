@@ -138,9 +138,16 @@ const Navdata = () => {
   },
   subItems: [
 
+      {
+      id: "fee-types",
+      label: "Fee Types",
+      link: "/finance/fee-type",
+      parentId: "finance",
+    },
+
     {
       id: "fee-generation",
-      label: "Monthly Fee Generation",
+      label: "Fee Generation",
       link: "/finance/fee-generation",
       parentId: "finance",
     },

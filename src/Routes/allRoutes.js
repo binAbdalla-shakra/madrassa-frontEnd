@@ -21,7 +21,9 @@ import Teachers from '../pages/Academics/Teachers';
 
 import Groups from '../pages/ClassManagement/Groups';
 
+import FeeType from '../pages/Finance/FeeType';
 import MonthlyFee from '../pages/Finance/MonthlyFee';
+
 import Receipt from '../pages/Finance/Receipt';
 import ExpenseType from '../pages/Finance/ExpenseType';
 import Expenses from '../pages/Finance/Expenses';
@@ -81,8 +83,9 @@ const authProtectedRoutes = [
 
 
 
-
+       { path: "/finance/fee-type", component: <FeeType /> },
        { path: "/finance/fee-generation", component: <MonthlyFee /> },
+
        { path: "/finance/receipts", component: <Receipt /> },
        { path: "/finance/expense-types", component: <ExpenseType /> },
        { path: "/finance/expenses", component: <Expenses /> },

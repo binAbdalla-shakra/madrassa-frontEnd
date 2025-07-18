@@ -93,13 +93,13 @@ const ReceiptPage = () => {
     
     try {
       const response = await fetch(
-        `${API_URL.API_URL}/finance/fees/parent/${selectedParent.value}?status=pending`
+        `${API_URL.API_URL}/fee/fees/parent/${selectedParent.value}?status=pending`
       );
       const data = await response.json();
       if (data.success) {
         setAvailableFees(data.data.map(fee => ({
           value: fee._id,
-          label: `${moment(fee.dueDate).format('MMM YYYY')} - ${fee.studentCount} student(s) - ${fee.totalAmount.toFixed(2)}`,
+          label: `${moment(fee.dueDate).format('MMM YYYY')} - ${fee.feeType?.name} - ${fee.studentCount} student(s) - ${fee.totalAmount.toFixed(2)}`,
           ...fee
         })));
       }
@@ -393,6 +393,7 @@ const ReceiptPage = () => {
                   value={newReceipt.amountPaid}
                   onChange={handleReceiptChange}
                   invalid={!!validationErrors.amountPaid}
+                  readonly
                 />
                 {validationErrors.amountPaid && (
                   <div className="text-danger small mt-1">{validationErrors.amountPaid}</div>
