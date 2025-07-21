@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Card, CardHeader, CardBody, CardFooter,
   Col, Container, Row,
-  Form, Input, Label, Button, Table, Spinner, Badge, Modal,ModalHeader,ModalBody,ModalFooter
+  Form, Input, Label, Button, Table, Spinner, Badge, Modal, ModalHeader, ModalBody, ModalFooter
 } from "reactstrap";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,7 +16,7 @@ const ReceiptPage = () => {
   // State for parents list and selection
   const [parents, setParents] = useState([]);
   const [selectedParent, setSelectedParent] = useState(null);
-  
+
   // State for receipts list
   const [receipts, setReceipts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +24,7 @@ const ReceiptPage = () => {
     startDate: moment().startOf('month').format('YYYY-MM-DD'),
     endDate: moment().endOf('month').format('YYYY-MM-DD')
   });
-  
+  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
   // State for new receipt modal
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [availableFees, setAvailableFees] = useState([]);
@@ -36,13 +36,13 @@ const ReceiptPage = () => {
     receivedBy: ''
   });
   const [validationErrors, setValidationErrors] = useState({});
-  
+
   // Payment method options
   const paymentMethods = [
     { value: 'cash', label: 'Cash' },
     { value: 'wallet', label: 'wallet' },
 
-    
+
     { value: 'bank', label: 'Bank Transfer' },
   ];
 
@@ -52,14 +52,14 @@ const ReceiptPage = () => {
     try {
       const response = await fetch(`${API_URL.API_URL}/parents`);
       const data = await response.json();
-    //   if (data.success) {
-      
-    //   }
-        setParents(data.data.map(parent => ({
-          value: parent._id,
-          label: parent.name,
-          ...parent
-        })));
+      //   if (data.success) {
+
+      //   }
+      setParents(data.data.map(parent => ({
+        value: parent._id,
+        label: parent.name,
+        ...parent
+      })));
     } catch (error) {
       toast.error("Error loading parents: " + error.message);
     } finally {
@@ -70,7 +70,7 @@ const ReceiptPage = () => {
   // Fetch receipts for selected parent
   const fetchReceipts = async () => {
     if (!selectedParent) return;
-    
+
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -90,7 +90,7 @@ const ReceiptPage = () => {
   // Fetch available fees for selected parent
   const fetchAvailableFees = async () => {
     if (!selectedParent) return;
-    
+
     try {
       const response = await fetch(
         `${API_URL.API_URL}/fee/fees/parent/${selectedParent.value}?status=pending`
@@ -99,7 +99,7 @@ const ReceiptPage = () => {
       if (data.success) {
         setAvailableFees(data.data.map(fee => ({
           value: fee._id,
-          label: `${moment(fee.dueDate).format('MMM YYYY')} - ${fee.feeType?.name} - ${fee.studentCount} student(s) - ${fee.totalAmount.toFixed(2)}`,
+          label: `${moment(`${fee.year}-${fee.month}`, 'YYYY-M').format('MMM YYYY')} - ${fee.feeType?.name} - ${fee.studentCount} student(s) - ${fee.totalAmount.toFixed(2)}`,
           ...fee
         })));
       }
@@ -124,7 +124,7 @@ const ReceiptPage = () => {
   const handleReceiptChange = (e) => {
     const { name, value } = e.target;
     setNewReceipt(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear validation error when field changes
     if (validationErrors[name]) {
       setValidationErrors(prev => {
@@ -147,13 +147,13 @@ const ReceiptPage = () => {
   // Validate form
   const validateForm = () => {
     const errors = {};
-    
+
     if (!selectedParent) errors.parent = 'Please select a parent';
     if (!newReceipt.feeId) errors.feeId = 'Please select a fee';
     if (!newReceipt.amountPaid || isNaN(newReceipt.amountPaid)) errors.amountPaid = 'Please enter a valid amount';
     if (!newReceipt.paymentMethod) errors.paymentMethod = 'Please select payment method';
-    if (!newReceipt.receivedBy) errors.receivedBy = 'Please enter receiver name';
-    
+    // if (!newReceipt.receivedBy) errors.receivedBy = 'Please enter receiver name';
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -161,9 +161,9 @@ const ReceiptPage = () => {
   // Submit new receipt
   const handleSubmitReceipt = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+    newReceipt.receivedBy = authUser?.data?.user.username || "admin";
     try {
       const response = await fetch(`${API_URL.API_URL}/finance/parents/${selectedParent.value}/receipts`, {
         method: 'POST',
@@ -220,14 +220,14 @@ const ReceiptPage = () => {
     <div className="page-content">
       <Container fluid>
         <BreadCrumb title="Receipt Management" pageTitle="Finance" />
-        
+
         <Row className="justify-content-center">
           <Col lg={12}>
             <Card className="default-card-wrapper">
               <CardHeader className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">Receipts</h5>
-                <Button 
-                  color="primary" 
+                <Button
+                  color="primary"
                   className="rounded-pill px-4"
                   onClick={() => setIsCreateModalOpen(true)}
                   disabled={!selectedParent}
@@ -235,7 +235,7 @@ const ReceiptPage = () => {
                   <i className="ri-add-line me-1"></i> Create Receipt
                 </Button>
               </CardHeader>
-              
+
               <CardBody>
                 <Row className="mb-3">
                   <Col md={4}>
@@ -252,7 +252,7 @@ const ReceiptPage = () => {
                       <div className="text-danger small mt-1">{validationErrors.parent}</div>
                     )}
                   </Col>
-                  
+
                   <Col md={2}>
                     <Label>Start Date</Label>
                     <Input
@@ -274,8 +274,8 @@ const ReceiptPage = () => {
                     />
                   </Col>
                   <Col md={2} className="d-flex align-items-end">
-                    <Button 
-                      color="primary" 
+                    <Button
+                      color="primary"
                       className="rounded-pill px-4"
                       onClick={fetchReceipts}
                       disabled={isLoading || !selectedParent}
@@ -284,7 +284,7 @@ const ReceiptPage = () => {
                     </Button>
                   </Col>
                 </Row>
-                
+
                 {selectedParent && (
                   <div className="table-responsive">
                     <Table hover className="mb-0">
@@ -297,6 +297,7 @@ const ReceiptPage = () => {
                           <th>Amount</th>
                           <th>Payment Method</th>
                           <th>Received By</th>
+                          <th>Note</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
@@ -308,8 +309,8 @@ const ReceiptPage = () => {
                               <td>{receipt.receiptNumber}</td>
                               <td>{moment(receipt.paymentDate).format('DD MMM YYYY')}</td>
                               <td>
-                                {receipt.fee ? 
-                                  moment(receipt.fee.dueDate).format('MMM YYYY') : 'N/A'}
+                                {receipt.fee ?
+                                  moment(`${receipt.fee.year}-${receipt.fee.month}`, 'YYYY-M').format('MMM YYYY') : 'N/A'}
                               </td>
                               <td>{receipt.amountPaid.toFixed(2)}</td>
                               <td>
@@ -318,9 +319,10 @@ const ReceiptPage = () => {
                                 </Badge>
                               </td>
                               <td>{receipt.receivedBy}</td>
+                              <td>{receipt.notes}</td>
                               <td>
-                                <Button 
-                                  color="light" 
+                                <Button
+                                  color="light"
                                   size="sm"
                                   onClick={() => handlePrintReceipt(receipt._id)}
                                 >
@@ -345,7 +347,7 @@ const ReceiptPage = () => {
                   </div>
                 )}
               </CardBody>
-              
+
               {selectedParent && (
                 <CardFooter className="d-flex justify-content-between">
                   <div className="text-muted">
@@ -362,7 +364,7 @@ const ReceiptPage = () => {
           </Col>
         </Row>
       </Container>
-      
+
       {/* Create Receipt Modal */}
       <Modal isOpen={isCreateModalOpen} toggle={() => setIsCreateModalOpen(!isCreateModalOpen)} size="lg">
         <ModalHeader toggle={() => setIsCreateModalOpen(false)}>
@@ -384,22 +386,28 @@ const ReceiptPage = () => {
                   <div className="text-danger small mt-1">{validationErrors.feeId}</div>
                 )}
               </Col>
-              
+
               <Col md={6} className="mb-3">
                 <Label>Amount Paid</Label>
                 <Input
-                  type="number"
+                  type="text"
                   name="amountPaid"
                   value={newReceipt.amountPaid}
                   onChange={handleReceiptChange}
                   invalid={!!validationErrors.amountPaid}
-                  readonly
+                  readOnly
+                  style={{
+                    backgroundColor: '#f8f9fa',  // light gray
+                    cursor: 'not-allowed',
+                    borderColor: '#ced4da'
+                  }}
+
                 />
                 {validationErrors.amountPaid && (
                   <div className="text-danger small mt-1">{validationErrors.amountPaid}</div>
                 )}
               </Col>
-              
+
               <Col md={6} className="mb-3">
                 <Label>Payment Method</Label>
                 <Input
@@ -419,8 +427,8 @@ const ReceiptPage = () => {
                   <div className="text-danger small mt-1">{validationErrors.paymentMethod}</div>
                 )}
               </Col>
-              
-              <Col md={6} className="mb-3">
+
+              {/* <Col md={6} className="mb-3">
                 <Label>Received By</Label>
                 <Input
                   type="text"
@@ -433,9 +441,9 @@ const ReceiptPage = () => {
                 {validationErrors.receivedBy && (
                   <div className="text-danger small mt-1">{validationErrors.receivedBy}</div>
                 )}
-              </Col>
-              
-              <Col md={6} className="mb-3">
+              </Col> */}
+
+              <Col md={12} className="mb-3">
                 <Label>Notes</Label>
                 <Input
                   type="text"
@@ -457,7 +465,7 @@ const ReceiptPage = () => {
           </ModalFooter>
         </Form>
       </Modal>
-      
+
       <ToastContainer limit={1} closeButton={false} />
     </div>
   );

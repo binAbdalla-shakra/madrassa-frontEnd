@@ -5,7 +5,7 @@ import {
   Form, Input, Label, Button, Table, Spinner, Badge,
   Modal, ModalHeader, ModalBody, ModalFooter, FormGroup
 } from "reactstrap";
-import { toast,ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import BreadCrumb from "../../../Components/Common/BreadCrumb";
@@ -20,7 +20,7 @@ const FeeGeneration = () => {
     month: currentMonth,
     year: currentYear
   });
-  
+
   const authUser = JSON.parse(sessionStorage.getItem("authUser"));
   const [generatedFees, setGeneratedFees] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -254,7 +254,7 @@ const FeeGeneration = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           feeId,
           amount: parseFloat(amount),
           createdBy: authUser?.data?.user.username || "Admin"
@@ -284,8 +284,8 @@ const FeeGeneration = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          feeId, 
+        body: JSON.stringify({
+          feeId,
           reason,
           createdBy: authUser?.data?.user.username || "Admin"
         })
@@ -339,9 +339,9 @@ const FeeGeneration = () => {
                   <Button color="info" size="sm" onClick={toggleCustomFeeModal} className="me-2">
                     <i className="ri-add-line align-bottom me-1"></i> Custom Fee
                   </Button>
-                  <Button color="secondary" size="sm" onClick={toggleBulkFeeModal}>
+                  {/* <Button color="secondary" size="sm" onClick={toggleBulkFeeModal}>
                     <i className="ri-add-box-line align-bottom me-1"></i> Bulk Generate
-                  </Button>
+                  </Button> */}
                 </div>
               </CardHeader>
               <CardBody>
@@ -368,9 +368,9 @@ const FeeGeneration = () => {
                         value={formData.month}
                         onChange={handleChange}
                       >
-                        {Array.from({length: 12}, (_, i) => (
-                          <option key={i+1} value={i+1}>
-                            {getMonthName(i+1)}
+                        {Array.from({ length: 12 }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {getMonthName(i + 1)}
                           </option>
                         ))}
                       </Input>
@@ -378,8 +378,8 @@ const FeeGeneration = () => {
                     <Col md={12} className="text-center mt-3">
                       {alreadyGenerated ? (
                         <>
-                          <Button 
-                            color="primary" 
+                          <Button
+                            color="primary"
                             className="rounded-pill px-4 me-2"
                             onClick={fetchGeneratedFees}
                             disabled={loading}
@@ -391,8 +391,8 @@ const FeeGeneration = () => {
                             )}
                             Load Fees
                           </Button>
-                          <Button 
-                            color="warning" 
+                          <Button
+                            color="warning"
                             className="rounded-pill px-4"
                             type="submit"
                             disabled={loading}
@@ -406,8 +406,8 @@ const FeeGeneration = () => {
                           </Button>
                         </>
                       ) : (
-                        <Button 
-                          color="primary" 
+                        <Button
+                          color="primary"
                           className="rounded-pill px-4"
                           type="submit"
                           disabled={loading}
@@ -469,7 +469,7 @@ const FeeGeneration = () => {
                             <td>{new Date(fee.dueDate).toLocaleDateString()}</td>
                             <td>
                               <div className="hstack gap-2">
-                                {fee.status !== 'paid' && fee.status !== 'cancelled' && (
+                                {/* {fee.status !== 'paid' && fee.status !== 'cancelled' && (
                                   <Button
                                     color="soft-success"
                                     size="sm"
@@ -477,8 +477,8 @@ const FeeGeneration = () => {
                                   >
                                     <i className="ri-money-dollar-circle-line"></i>
                                   </Button>
-                                )}
-                                {fee.status !== 'cancelled' && (
+                                )} */}
+                                {fee.status !== 'paid' && fee.status !== 'cancelled' && (
                                   <Button
                                     color="soft-danger"
                                     size="sm"
@@ -516,11 +516,14 @@ const FeeGeneration = () => {
                       onChange={handleCustomFeeChange}
                       required
                     >
-                      {feeTypes.map(feeType => (
-                        <option key={feeType._id} value={feeType._id}>
-                          {feeType.name} ({feeType.category})
-                        </option>
-                      ))}
+                      {feeTypes
+                        .filter(feeType => feeType.category !== 'tuition')
+                        .map(feeType => (
+                          <option key={feeType._id} value={feeType._id}>
+                            {feeType.name} ({feeType.category})
+                          </option>
+                        ))}
+
                     </Input>
                   </FormGroup>
                 </Col>
@@ -543,7 +546,7 @@ const FeeGeneration = () => {
                   </FormGroup>
                 </Col>
               </Row>
-              
+
               <Row>
                 <Col md={4}>
                   <FormGroup>
@@ -586,7 +589,7 @@ const FeeGeneration = () => {
                   </FormGroup>
                 </Col>
               </Row>
-              
+
               <Row>
                 <Col md={6}>
                   <FormGroup>
@@ -653,7 +656,7 @@ const FeeGeneration = () => {
                   </FormGroup>
                 </Col>
               </Row>
-              
+
               <div className="table-responsive">
                 <Table bordered>
                   <thead>
@@ -681,7 +684,7 @@ const FeeGeneration = () => {
                             onChange={(e) => {
                               const newFeeData = [...bulkFeeForm.feeData];
                               newFeeData[index].studentCount = e.target.value;
-                              setBulkFeeForm({...bulkFeeForm, feeData: newFeeData});
+                              setBulkFeeForm({ ...bulkFeeForm, feeData: newFeeData });
                             }}
                             min="1"
                             required
@@ -695,7 +698,7 @@ const FeeGeneration = () => {
                             onChange={(e) => {
                               const newFeeData = [...bulkFeeForm.feeData];
                               newFeeData[index].totalAmount = e.target.value;
-                              setBulkFeeForm({...bulkFeeForm, feeData: newFeeData});
+                              setBulkFeeForm({ ...bulkFeeForm, feeData: newFeeData });
                             }}
                             min="0"
                             step="0.01"
@@ -710,7 +713,7 @@ const FeeGeneration = () => {
                             onChange={(e) => {
                               const newFeeData = [...bulkFeeForm.feeData];
                               newFeeData[index].discountAmount = e.target.value;
-                              setBulkFeeForm({...bulkFeeForm, feeData: newFeeData});
+                              setBulkFeeForm({ ...bulkFeeForm, feeData: newFeeData });
                             }}
                             min="0"
                             step="0.01"
@@ -724,7 +727,7 @@ const FeeGeneration = () => {
                             onChange={(e) => {
                               const newFeeData = [...bulkFeeForm.feeData];
                               newFeeData[index].dueDate = e.target.value;
-                              setBulkFeeForm({...bulkFeeForm, feeData: newFeeData});
+                              setBulkFeeForm({ ...bulkFeeForm, feeData: newFeeData });
                             }}
                             required
                           />
@@ -737,7 +740,7 @@ const FeeGeneration = () => {
                             onChange={(e) => {
                               const newFeeData = [...bulkFeeForm.feeData];
                               newFeeData[index].notes = e.target.value;
-                              setBulkFeeForm({...bulkFeeForm, feeData: newFeeData});
+                              setBulkFeeForm({ ...bulkFeeForm, feeData: newFeeData });
                             }}
                           />
                         </td>
@@ -761,7 +764,7 @@ const FeeGeneration = () => {
             </ModalFooter>
           </Form>
         </Modal>
-        <ToastContainer/>
+        <ToastContainer />
       </Container>
     </div>
   );
