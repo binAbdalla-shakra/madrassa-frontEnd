@@ -228,7 +228,9 @@ const lineChartOptions = {
     }
   }
 };
-
+const totalRevenue = yearlyData?.reduce((sum, m) => sum + (m.revenue || 0), 0) || 0;
+const totalExpenses = yearlyData?.reduce((sum, m) => sum + (m.expenses || 0), 0) || 0;
+// console.log("dddd",totalRevenue)
   // const chartOptions = {
   //   responsive: true,
   //   plugins: {
@@ -442,13 +444,13 @@ const lineChartOptions = {
                           <Col md={6}>
                             <div className="text-center">
                               <h6 className="text-muted">Total Revenue</h6>
-                              <h4 className="text-success">${(yearlyData.receipts?.totalReceipts || 0).toLocaleString()}</h4>
+                              <h4 className="text-success">${totalRevenue.toLocaleString()}</h4>
                             </div>
                           </Col>
                           <Col md={6}>
                             <div className="text-center">
                               <h6 className="text-muted">Total Expenses</h6>
-                              <h4 className="text-danger">${(yearlyData.expenses?.totalExpenses || 0).toLocaleString()}</h4>
+                              <h4 className="text-danger">${totalExpenses.toLocaleString()}</h4>
                             </div>
                           </Col>
                         </Row>
