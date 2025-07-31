@@ -13,7 +13,7 @@ import { createSelector } from 'reselect';
 const VerticalLayout = (props) => {
     const navData = navdata().props.children;
     const path = props.router.location.pathname;
-
+    // console.log("dtaa", navData)
     /*
  layout settings
  */

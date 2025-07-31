@@ -5,17 +5,24 @@ import BasicTables from '../pages/Tables/BasicTables/BasicTables';
 import ListTables from '../pages/Tables/ListTables/ListTables';
 import ReactTable from "../pages/Tables/ReactTables";
 
- import Dashboard from '../pages/Dashboard';
+
+import Cover404 from "../pages/AuthenticationInner/Errors/Cover404";
+
+
+import Dashboard from '../pages/Dashboard';
 
 
 //Settings
 import Branch from '../pages/settings/Branch';
 import Roles from '../pages/settings/Roles';
 import Users from '../pages/settings/Users';
+import Menus from '../pages/settings/Menus';
+import Permissions from '../pages/settings/Permissions';
+
 
 
 // Academnics
- import Parents from '../pages/Academics/Parents';
+import Parents from '../pages/Academics/Parents';
 import Students from '../pages/Academics/Students';
 import Teachers from '../pages/Academics/Teachers';
 
@@ -62,38 +69,45 @@ const authProtectedRoutes = [
   { path: "/tables-listjs", component: <ListTables /> },
   { path: "/tables-react", component: <ReactTable /> },
 
-  
+
   //Settings
   { path: "/setting-users", component: <Users /> },
   { path: "/setting-roles", component: <Roles /> },
-    { path: "/setting-branches", component: <Branch /> },
+  { path: "/setting-branches", component: <Branch /> },
   { path: "/setting-madrassa", component: <Madrassas /> },
+  { path: "/setting-menus", component: <Menus /> },
+  { path: "/setting-permissions", component: <Permissions /> },
+
+
 
 
   // Academics 
-       { path: "/academics-parents", component: <Parents /> },
-       { path: "/academics-students", component: <Students /> },
-       { path: "/academics-teachers", component: <Teachers /> },
+  { path: "/academics-parents", component: <Parents /> },
+  { path: "/academics-students", component: <Students /> },
+  { path: "/academics-teachers", component: <Teachers /> },
 
   // group management 
-       { path: "/groups", component: <Groups /> },
-       { path: "/group-attendance", component: <Attendance /> },
-       { path: "/group-lessons", component: <Lessons /> },
+  { path: "/groups", component: <Groups /> },
+  { path: "/group-attendance", component: <Attendance /> },
+  { path: "/group-lessons", component: <Lessons /> },
 
 
 
 
-       { path: "/finance/fee-type", component: <FeeType /> },
-       { path: "/finance/fee-generation", component: <MonthlyFee /> },
+  { path: "/finance/fee-type", component: <FeeType /> },
+  { path: "/finance/fee-generation", component: <MonthlyFee /> },
 
-       { path: "/finance/receipts", component: <Receipt /> },
-       { path: "/finance/expense-types", component: <ExpenseType /> },
-       { path: "/finance/expenses", component: <Expenses /> },
-       { path: "/reports/balancesheet", component: <BalancesheetReport /> },
-       { path: "/general/finance/rpt", component: <GeneralFinanceReport /> },
-       { path: "/reports/attendance", component: <AttendanceReport /> },
-       { path: "/reports/lesson", component: <LessonReport /> },
-       { path: "/reports/students-without-lesson", component: <StudentWithoutLessonReport /> },
+  { path: "/finance/receipts", component: <Receipt /> },
+  { path: "/finance/expense-types", component: <ExpenseType /> },
+  { path: "/finance/expenses", component: <Expenses /> },
+  { path: "/reports/balancesheet", component: <BalancesheetReport /> },
+  { path: "/general/finance/rpt", component: <GeneralFinanceReport /> },
+  { path: "/reports/attendance", component: <AttendanceReport /> },
+  { path: "/reports/lesson", component: <LessonReport /> },
+  { path: "/reports/students-without-lesson", component: <StudentWithoutLessonReport /> },
+
+
+
 
 
 
@@ -110,15 +124,14 @@ const authProtectedRoutes = [
     exact: true,
     component: <Navigate to="/dashboard" />,
   },
-  { path: "*", component: <Navigate to="/dashboard" /> },
 ];
 
 const publicRoutes = [
   // Authentication Page
   { path: "/logout", component: <Logout /> },
   { path: "/login", component: <Login /> },
-  // { path: "/forgot-password", component: <ForgetPasswordPage /> },
-  
+  { path: "/not-found", component: <Cover404 /> },
+  { path: "*", component: <Cover404 /> },
 
 
 ];

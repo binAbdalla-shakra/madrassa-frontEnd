@@ -6,11 +6,11 @@ import { Col, Container, Row } from 'reactstrap';
 import error400cover from "../../../assets/images/error400-cover.png";
 
 const Cover404 = () => {
-document.title="404 Error Cover | Velzon - React Admin & Dashboard Template";
+    document.title = "404 Error Cover | Madrassa";
     return (
         <React.Fragment>
             <div className="auth-page-content">
-                
+
                 <div className="auth-page-wrapper py-5 d-flex justify-content-center align-items-center min-vh-100">
                     <div className="auth-page-content overflow-hidden p-0">
                         <Container>
@@ -21,7 +21,7 @@ document.title="404 Error Cover | Velzon - React Admin & Dashboard Template";
                                         <div className="mt-3">
                                             <h3 className="text-uppercase">Sorry, Page not Found 😭</h3>
                                             <p className="text-muted mb-4">The page you are looking for not available!</p>
-                                            <Link to="/dashboard" className="btn btn-success"><i className="mdi mdi-home me-1"></i>Back to home</Link>
+                                            {/* <Link to="/dashboard" className="btn btn-success"><i className="mdi mdi-home me-1"></i>Back to home</Link> */}
                                         </div>
                                     </div>
                                 </Col>

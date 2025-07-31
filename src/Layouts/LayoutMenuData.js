@@ -1,253 +1,263 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { api } from "../config";
 const Navdata = () => {
   const history = useNavigate();
-  //state data
-  const [isDashboard, setIsDashboard] = useState(false);
-  const [isSettings, setIsSettings] = useState(false);
-  const [isAcademics, setIsAcademics] = useState(false);
-  const [isClassMgmt, setIsClassMgmt] = useState(false);
-  const [isMonitoring, setIsMonitoring] = useState(false);
-  const [isFinance, setIsFinance] = useState(false);
-  const [isReports, setIsReports] = useState(false);
+  const location = useLocation();
 
-
-
-
-
+  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
+  const userId = authUser?.data?.user?._id;
+  const isSuperAdmin = userId === "superadmin-id";
   const [iscurrentState, setIscurrentState] = useState("Dashboard");
+  const [retreivedMenus, setRetreivedMenus] = useState([]);
+  const [menuStates, setMenuStates] = useState({}); // dynamic toggle states
 
   function updateIconSidebar(e) {
-    if (e && e.target && e.target.getAttribute("subitems")) {
+    if (e?.target?.getAttribute("subitems")) {
       const ul = document.getElementById("two-column-menu");
-      const iconItems = ul.querySelectorAll(".nav-icon.active");
-      let activeIconItems = [...iconItems];
-      activeIconItems.forEach((item) => {
+      const iconItems = ul?.querySelectorAll(".nav-icon.active") || [];
+      [...iconItems].forEach((item) => {
         item.classList.remove("active");
-        var id = item.getAttribute("subitems");
-        if (document.getElementById(id))
-          document.getElementById(id).classList.remove("show");
+        const id = item.getAttribute("subitems");
+        const el = document.getElementById(id);
+        if (el) el.classList.remove("show");
       });
     }
   }
+  // Function to collect all permitted paths from menus
+  const getAllPermittedPaths = (menus) => {
+    const paths = [];
+    menus.forEach(menu => {
+      if (menu.link && menu.link !== "/#") paths.push(menu.link);
+      if (menu.subItems) {
+        menu.subItems.forEach(sub => {
+          paths.push(sub.link);
+        });
+      }
+    });
+    return paths;
+  };
 
+  // Reset state variables on current state change
   useEffect(() => {
-    
-    if (iscurrentState !== "Dashboard") {
-      setIsDashboard(false);
+    setMenuStates((prevStates) => {
+      const newStates = {};
+      Object.keys(prevStates).forEach((key) => {
+        newStates[key] = key === iscurrentState;
+      });
+      return newStates;
+    });
+  }, [iscurrentState]);
+
+  // console.log("current state is:", iscurrentState)
+
+  // Fetch dynamic menu if not superadmin
+  useEffect(() => {
+    const fetchDynamicMenu = async () => {
+      try {
+
+        const response = await fetch(`${api.API_URL}/users/${userId}/menu`);
+        const data = await response.json();
+        setRetreivedMenus(data.flatMenu);
+      } catch (err) {
+        console.error("Error fetching user menu:", err);
+      }
+    };
+
+    if (userId && userId !== "superadmin-id") {
+      fetchDynamicMenu();
     }
-    if (iscurrentState !== "Settings") {
-      setIsSettings(false);
+  }, [userId]);
+
+
+
+
+  // Check route permission
+  useEffect(() => {
+    if (!isSuperAdmin && retreivedMenus.length > 0) {
+      const permittedPaths = getAllPermittedPaths(retreivedMenus);
+      const currentPath = location.pathname;
+
+      // Allow access to root or not-found page
+      if (currentPath === "/" || currentPath === "/not-found") return;
+
+      // Check if current path or any parent path is permitted
+      const isPermitted = permittedPaths.some(path => {
+        return currentPath.startsWith(path) ||
+          (path !== "/dashboard" && currentPath.includes(path));
+      });
+
+      if (!isPermitted) {
+        history("/not-found");
+      }
     }
-
-    if (iscurrentState !== "Academics") setIsAcademics(false);
-    if (iscurrentState !== "ClassManagement") setIsClassMgmt(false);
-    if (iscurrentState !== "Monitoring") setIsMonitoring(false);
-    if (iscurrentState !== "Finance") setIsFinance(false);
-    if (iscurrentState !== "Reports") setIsReports(false);
+  }, [location.pathname, retreivedMenus, isSuperAdmin, history]);
 
 
-   
-  }, [
-    history,
-    iscurrentState,
-    // isDashboard,
-    // isSettings,
-  ]);
 
+  // Static full-access menu for superadmin
   const menuItems = [
-
     {
       id: "dashboard",
       label: "Dashboards",
       icon: "ri-dashboard-line",
       link: "/dashboard",
-      click: function (e) {
+      click: (e) => {
         e.preventDefault();
         setIscurrentState("Dashboards");
       },
     },
 
-   
-       {
-      id: "academics",
+    {
+      id: "registrations",
       label: "Registrations",
-      icon: "ri-graduation-cap-line",
+      icon: "ri-team-line",
       link: "/#",
-      stateVariables: isAcademics,
+      stateVariables: menuStates["Registrations"] || false,
       click: (e) => {
         e.preventDefault();
-        setIsAcademics(!isAcademics);
+        setMenuStates((prev) => ({ ...prev, Registrations: !prev.Registrations }));
+        setIscurrentState("Registrations");
+        updateIconSidebar(e);
+      },
+      subItems: [
+        { id: "parents", label: "Parents", link: "/academics-parents", parentId: "registrations" },
+        { id: "students", label: "Students", link: "/academics-students", parentId: "registrations" },
+        { id: "teachers", label: "Teachers", link: "/academics-teachers", parentId: "registrations" },
+      ],
+    },
+
+    {
+      id: "academics",
+      label: "Academics",
+      icon: "ri-graduation-cap-line",
+      link: "/#",
+      stateVariables: menuStates["Academics"] || false,
+      click: (e) => {
+        e.preventDefault();
+        setMenuStates((prev) => ({ ...prev, Academics: !prev.Academics }));
         setIscurrentState("Academics");
         updateIconSidebar(e);
       },
       subItems: [
-        { id: "parents", label: "Parents", link: "/academics-parents", parentId: "academics" },
-        { id: "students", label: "Students", link: "/academics-students", parentId: "academics" },
-        { id: "teachers", label: "Teachers", link: "/academics-teachers", parentId: "academics" },
+        { id: "groups", label: "Groups", link: "/groups", parentId: "academics" },
+        { id: "attendance", label: "Attendance", link: "/group-attendance", parentId: "academics" },
+        { id: "lesson-tracking", label: "Lesson Tracking", link: "/group-lessons", parentId: "academics" },
       ],
     },
+
+
+
+
     {
-      id: "classManagement",
-      label: "Academics",
-      icon: "ri-team-line",
+      id: "finance",
+      label: "Finance",
+      icon: "ri-money-dollar-circle-line",
       link: "/#",
-      stateVariables: isClassMgmt,
-      click: (e) => {
+      stateVariables: menuStates["Finance"] || false,
+      click: function (e) {
         e.preventDefault();
-        setIsClassMgmt(!isClassMgmt);
-        setIscurrentState("ClassManagement");
+        setMenuStates((prev) => ({ ...prev, Finance: !prev.Finance }));
+        setIscurrentState("Finance");
         updateIconSidebar(e);
       },
       subItems: [
-        { id: "groups", label: "Groups", link: "/groups", parentId: "classManagement" },
-      { id: "attendance", label: "Attendance", link: "/group-attendance", parentId: "classManagement" },
-        { id: "lesson-tracking", label: "Lesson Tracking", link: "/group-lessons", parentId: "classManagement" },
-      ],
+
+        {
+          id: "fee-types",
+          label: "Fee Types",
+          link: "/finance/fee-type",
+          parentId: "finance",
+        },
+
+        {
+          id: "fee-generation",
+          label: "Fee Generation",
+          link: "/finance/fee-generation",
+          parentId: "finance",
+        },
+        {
+          id: "receipts",
+          label: "Receipts",
+          link: "/finance/receipts",
+          parentId: "finance",
+        },
+        {
+          id: "expenses",
+          label: "Expenses",
+          link: "/finance/expenses",
+          parentId: "finance",
+        },
+        {
+          id: "expense-types",
+          label: "Expense Types",
+          link: "/finance/expense-types",
+          parentId: "finance",
+        },
+
+      ]
     },
-    // {
-    //   id: "monitoring",
-    //   label: "Monitoring",
-    //   icon: "ri-eye-line",
-    //   link: "/#",
-    //   stateVariables: isMonitoring,
-    //   click: (e) => {
-    //     e.preventDefault();
-    //     setIsMonitoring(!isMonitoring);
-    //     setIscurrentState("Monitoring");
-    //     updateIconSidebar(e);
-    //   },
-    //   subItems: [
-    //     { id: "attendance", label: "Attendance", link: "/monitoring-attendance", parentId: "monitoring" },
-    //     { id: "lesson-tracking", label: "Lesson Tracking", link: "/monitoring-lessons", parentId: "monitoring" },
-    //   ],
-    // },
+
 
     {
-  id: "finance",
-  label: "Finance",
-  icon: "ri-money-dollar-circle-line",
-  link: "/#",
-  stateVariables: isFinance,
-  click: function (e) {
-    e.preventDefault();
-    setIsFinance(!isFinance);
-    setIscurrentState("Finance");
-    updateIconSidebar(e);
-  },
-  subItems: [
+      id: "reports",
+      label: "Reports",
+      icon: "ri-bar-chart-line",
+      link: "/#",
+      stateVariables: menuStates["Reports"] || false,
+      click: function (e) {
+        e.preventDefault();
+        setMenuStates((prev) => ({ ...prev, Reports: !prev.Reports }));
+        setIscurrentState("Reports");
+        updateIconSidebar(e);
+      },
+      subItems: [
 
-      {
-      id: "fee-types",
-      label: "Fee Types",
-      link: "/finance/fee-type",
-      parentId: "finance",
-    },
+        {
+          id: "attendance-report",
+          label: "Lesson Report",
+          link: "/reports/lesson",
+          parentId: "reports",
+        },
+        {
+          id: "lesson-report",
+          label: "Attendance Report",
+          link: "/reports/attendance",
+          parentId: "reports",
+        },
 
-    {
-      id: "fee-generation",
-      label: "Fee Generation",
-      link: "/finance/fee-generation",
-      parentId: "finance",
-    },
-    {
-      id: "receipts",
-      label: "Payment Receipts",
-      link: "/finance/receipts",
-      parentId: "finance",
-    },
-    {
-      id: "expenses",
-      label: "Expenses",
-      link: "/finance/expenses",
-      parentId: "finance",
-    },
-    {
-      id: "expense-types",
-      label: "Expense Types",
-      link: "/finance/expense-types",
-      parentId: "finance",
-    },
+        {
+          id: "students-without-lesson-report",
+          label: "Student without Lesson",
+          link: "/reports/students-without-lesson",
+          parentId: "reports",
+        },
 
-  ]
-},
-
-
- {
-  id: "reports",
-  label: "Reports",
-  icon: "ri-money-dollar-circle-line",
-  link: "/#",
-  stateVariables: isReports,
-  click: function (e) {
-    e.preventDefault();
-    setIsReports(!isReports);
-    setIscurrentState("Reports");
-    updateIconSidebar(e);
-  },
-  subItems: [
-
-    {
-      id: "attendance-report",
-      label: "Lesson Report",
-      link: "/reports/lesson",
-      parentId: "reports",
-    },
-      {
-      id: "lesson-report",
-      label: "Attendance Report",
-      link: "/reports/attendance",
-      parentId: "reports",
-    },
-
-     {
-      id: "students-without-lesson-report",
-      label: "Student without Lesson",
-      link: "/reports/students-without-lesson",
-      parentId: "reports",
+        {
+          id: "balance-sheet",
+          label: "Balance Sheet",
+          link: "/reports/balancesheet",
+          parentId: "reports",
+        },
+        {
+          id: "financial-report",
+          label: "Gen Financial Report",
+          link: "/general/finance/rpt",
+          parentId: "reports",
+        },
+      ]
     },
 
     {
-      id: "balance-sheet",
-      label: "Balance Sheet",
-      link: "/reports/balancesheet",
-      parentId: "reports",
-    },
-    {
-      id: "financial-report",
-      label: "Gen Financial Report",
-      link: "/general/finance/rpt",
-      parentId: "reports",
-    },
-    // {
-    //   id: "expenses",
-    //   label: "Expenses",
-    //   link: "/finance/expenses",
-    //   parentId: "finance",
-    // },
-    // {
-    //   id: "expense-types",
-    //   label: "Expense Types",
-    //   link: "/finance/expense-types",
-    //   parentId: "finance",
-    // },
-
-  ]
-},
-
-
-
-
-      {
       id: "settings",
       label: "Settings",
       icon: "ri-apps-2-line",
       link: "/#",
-      stateVariables: isSettings,
+      stateVariables: menuStates["Settings"] || false,
       click: function (e) {
         e.preventDefault();
-        setIsSettings(!isSettings);
+        setMenuStates((prev) => ({ ...prev, Settings: !prev.Settings }));
         setIscurrentState("Settings");
         updateIconSidebar(e);
       },
@@ -258,7 +268,7 @@ const Navdata = () => {
           link: "/setting-madrassa",
           parentId: "settings",
         },
- 
+
         {
           id: "users",
           label: "Users",
@@ -271,13 +281,63 @@ const Navdata = () => {
           link: "/setting-roles",
           parentId: "settings",
         },
-       
+
+        {
+          id: "menus",
+          label: "Menus",
+          link: "/setting-menus",
+          parentId: "settings",
+        },
+
+        {
+          id: "permissions",
+          label: "Permissions",
+          link: "/setting-permissions",
+          parentId: "settings",
+        },
+
 
       ],
     },
 
-
   ];
-  return <React.Fragment>{menuItems}</React.Fragment>;
+
+  // console.log("retreivced data is:", retreivedMenus);
+  const dynamicMenu = retreivedMenus.map((item) => {
+    const menuItem = {
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      link: item.link,
+      stateVariables: menuStates[item.label] || false,
+      click: (e) => {
+        e.preventDefault();
+        setMenuStates((prev) => ({
+          ...prev,
+          [item.label]: !prev[item.label],
+        }));
+        setIscurrentState(item.label);
+        updateIconSidebar(e);
+      }
+    };
+
+    // Only add subItems if they exist and length > 0
+    if (item.subItems && item.subItems.length > 0) {
+      menuItem.subItems = item.subItems.map((sub) => ({
+        id: sub.id,
+        label: sub.label,
+        link: sub.link,
+        parentId: sub.parentId,
+      }));
+    }
+
+    return menuItem;
+  });
+
+
+  const menuToRender = userId === "superadmin-id" ? menuItems : dynamicMenu;
+
+  return <React.Fragment>{menuToRender}</React.Fragment>;
 };
+
 export default Navdata;

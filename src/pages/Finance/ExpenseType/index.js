@@ -47,7 +47,7 @@ const ExpenseTypesPage = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear validation error when field changes
     if (validationErrors[name]) {
       setValidationErrors(prev => {
@@ -61,11 +61,11 @@ const ExpenseTypesPage = () => {
   // Validate form
   const validateForm = () => {
     const errors = {};
-    
+
     if (!formData.name.trim()) errors.name = 'Name is required';
     if (formData.name.length > 50) errors.name = 'Name must be less than 50 characters';
     if (formData.description.length > 200) errors.description = 'Description must be less than 200 characters';
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -73,17 +73,17 @@ const ExpenseTypesPage = () => {
   // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
     try {
-      const url = modal.mode === 'create' 
-        ? `${API_URL.API_URL}/expense-types` 
+      const url = modal.mode === 'create'
+        ? `${API_URL.API_URL}/expense-types`
         : `${API_URL.API_URL}/expense-types/${modal.data._id}`;
-      
+
       const method = modal.mode === 'create' ? 'POST' : 'PUT';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -171,21 +171,21 @@ const ExpenseTypesPage = () => {
     <div className="page-content">
       <Container fluid>
         <BreadCrumb title="Expense Types" pageTitle="Finance" />
-        
+
         <Row className="justify-content-center">
           <Col lg={12}>
             <Card className="default-card-wrapper">
               <CardHeader className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">Expense Types</h5>
-                <Button 
-                  color="primary" 
+                <Button
+                  color="primary"
                   className="rounded-pill px-4"
                   onClick={openCreateModal}
                 >
                   <i className="ri-add-line me-1"></i> Add New
                 </Button>
               </CardHeader>
-              
+
               <CardBody>
                 <div className="table-responsive">
                   <Table hover className="mb-0">
@@ -214,22 +214,22 @@ const ExpenseTypesPage = () => {
 
 
 
- <div className="hstack gap-2">
-        <button
-          className="btn btn-sm btn-soft-primary"
-          onClick={() => openEditModal(type)}
-        >
-          <i className="ri-pencil-fill"></i>
-        </button>
-        <button
-          className="btn btn-sm btn-soft-danger"
-          onClick={() => handleDelete(type)}
-        >
-          <i className="ri-delete-bin-5-fill"></i>
-        </button>
-      </div>
+                              <div className="hstack gap-2">
+                                <button
+                                  className="btn btn-sm btn-soft-primary"
+                                  onClick={() => openEditModal(type)}
+                                >
+                                  <i className="ri-pencil-fill"></i>
+                                </button>
+                                <button
+                                  className="btn btn-sm btn-soft-danger"
+                                  onClick={() => handleDelete(type)}
+                                >
+                                  <i className="ri-delete-bin-5-fill"></i>
+                                </button>
+                              </div>
 
-                  
+
                             </td>
                           </tr>
                         ))
@@ -252,7 +252,7 @@ const ExpenseTypesPage = () => {
           </Col>
         </Row>
       </Container>
-      
+
       {/* Create/Edit Modal */}
       <Modal isOpen={modal.isOpen} toggle={() => setModal(prev => ({ ...prev, isOpen: false }))}>
         <ModalHeader toggle={() => setModal(prev => ({ ...prev, isOpen: false }))}>
@@ -274,7 +274,7 @@ const ExpenseTypesPage = () => {
                 <div className="text-danger small mt-1">{validationErrors.name}</div>
               )}
             </div>
-            
+
             <div className="mb-3">
               <Label>Description</Label>
               <Input
@@ -290,7 +290,7 @@ const ExpenseTypesPage = () => {
                 <div className="text-danger small mt-1">{validationErrors.description}</div>
               )}
             </div>
-            
+
             <div className="mb-3">
               <div className="form-check">
                 <Input
@@ -315,7 +315,7 @@ const ExpenseTypesPage = () => {
           </ModalFooter>
         </Form>
       </Modal>
-      
+
       <ToastContainer limit={1} closeButton={false} />
     </div>
   );

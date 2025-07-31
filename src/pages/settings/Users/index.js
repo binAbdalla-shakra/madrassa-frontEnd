@@ -44,14 +44,15 @@ const Users = () => {
   }));
 
   const { users, roles, error, isSuccess } = useSelector(userSelector);
+  const [teachers, setTeachers] = useState([]);
 
   const [isEdit, setIsEdit] = useState(false);
   const [modal, setModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [user, setUser] = useState(null);
   const [filterText, setFilterText] = useState("");
-const [userName, setUserName] = useState("Admin");
-const [madrassaId, setMadrassaId] = useState();
+  const [userName, setUserName] = useState("Admin");
+  const [madrassaId, setMadrassaId] = useState();
 
 
   const toggle = useCallback(() => setModal(!modal), [modal]);
@@ -62,35 +63,41 @@ const [madrassaId, setMadrassaId] = useState();
       username: user?.username || "",
       email: user?.email || "",
       password: user?.password || "",
-      role: user?.role?._id || "0"
+      Teacher: user?.Teacher || "",
+
+      roles: user?.roles ? user.roles.map(r => r._id) : [] // Changed to array
     },
     onSubmit: (values) => {
-       if (!values.username.trim()) {
+      if (!values.username.trim()) {
         toast.warn("Username is required");
         return;
       }
-        if (!values.email.trim()) {
-        toast.warn("Email is required");
-        return;
-      }
+
 
       if (!values.password.trim()) {
         toast.warn("Password is required");
         return;
       }
 
-      if (values.role === "0") {
-        toast.warn("Please select a valid role");
+      if (!values.Teacher) {
+        toast.warn("Teacher is required");
         return;
       }
-      
+
+      if (values.roles.length === 0) {
+        toast.warn("Please select at least one role");
+        return;
+      }
+
       const userData = {
         username: values.username,
         email: values.email,
-        roleId: values.role,
+        roles: values.roles, // Changed to array
         password: values.password,
-        madrassaId:madrassaId,
-        
+        Teacher: values.Teacher,
+
+        madrassaId: madrassaId,
+
       };
       // console.log("Role id is: ",userData.roleId);
       if (isEdit) {
@@ -99,7 +106,7 @@ const [madrassaId, setMadrassaId] = useState();
         userData.ModifiedDate = new Date().toISOString();
         dispatch(onUpdateUser(userData));
       } else {
-        userData.CreatedBy= userName;
+        userData.CreatedBy = userName;
         dispatch(onAddNewUser(userData));
       }
       validation.resetForm();
@@ -133,21 +140,53 @@ const [madrassaId, setMadrassaId] = useState();
   };
 
   useEffect(() => {
-     if (sessionStorage.getItem("authUser")) {
-    const obj = JSON.parse(sessionStorage.getItem("authUser"));
-    const username = obj?.data?.user?.username || "Admin";
-     const madrassaId = obj?.data?.user?.madrassaId;
-    setMadrassaId(madrassaId);
-    setUserName(username);
-  }
+    if (sessionStorage.getItem("authUser")) {
+      const obj = JSON.parse(sessionStorage.getItem("authUser"));
+      const username = obj?.data?.user?.username || "Admin";
+      const madrassaId = obj?.data?.user?.madrassaId;
+      setMadrassaId(madrassaId);
+      setUserName(username);
+    }
     dispatch(onGetUsers());
     dispatch(onGetRoles());
+
   }, [dispatch]);
+
+
+  // Fetch initial data
+  const fetchInitialData = async () => {
+    // setIsLoading(true);
+    try {
+      // Fetch teachers
+      const teachersRes = await fetch(`${API_URL.API_URL}/teachers`);
+      const teachersData = await teachersRes.json();
+      //   if (teachersData.success) {
+
+      //   }
+      setTeachers(teachersData.data.map(t => ({
+        value: t._id,
+        label: t.name,
+        ...t
+      })));
+
+    } catch (error) {
+      toast.error("Error loading initial data: " + error.message);
+    }
+  };
+
+
+  // Initial data load
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+
+
 
   const filteredUsers = (users || []).filter(
     u => u?.username?.toLowerCase().includes(filterText.toLowerCase()) ||
-         u?.email?.toLowerCase().includes(filterText.toLowerCase()) ||
-         u?.role?.type?.toLowerCase().includes(filterText.toLowerCase())
+      u?.email?.toLowerCase().includes(filterText.toLowerCase()) ||
+      (u?.roles && u.roles.some(r => r.type.toLowerCase().includes(filterText.toLowerCase())))
   );
 
   const columns = [
@@ -165,8 +204,8 @@ const [madrassaId, setMadrassaId] = useState();
       selector: row => row.email
     },
     {
-      name: <span data-key="role">Role</span>,
-      selector: row => row.role?.type || ""
+      name: <span data-key="roles">Roles</span>,
+      selector: row => row.roles?.map(r => r.type).join(", ") || ""
     },
     {
       name: <span data-key="actions">Actions</span>,
@@ -192,7 +231,7 @@ const [madrassaId, setMadrassaId] = useState();
           className="form-control"
           placeholder="Search..."
           onChange={e => setFilterText(e.target.value)}
-          style={{ maxWidth: '500px', width:'250px', paddingLeft: '30px' }}
+          style={{ maxWidth: '500px', width: '250px', paddingLeft: '30px' }}
           data-key="search-input"
         />
         <i
@@ -203,11 +242,17 @@ const [madrassaId, setMadrassaId] = useState();
     </div>
   );
 
-  const roleOptions = [
-  { label: "Select Role", value: "0" },
-  ...roles.map(r => ({ label: r.type, value: r._id }))
-];
+  // Prepare role options for multi-select
+  const roleOptions = roles.map(r => ({
+    label: r.type,
+    value: r._id
+  }));
 
+
+  // Get currently selected roles for the form
+  const selectedRoles = roleOptions.filter(option =>
+    validation.values.roles.includes(option.value)
+  );
 
   return (
     <div className="page-content">
@@ -219,7 +264,7 @@ const [madrassaId, setMadrassaId] = useState();
             <Card>
               <CardHeader className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0" data-key="user-list-title">User List</h5>
-                <button className="btn btn-success" onClick={handleAddClick}>
+                <button className="btn btn-primary" onClick={handleAddClick}>
                   <i className="ri-add-line me-1"></i> <span data-key="add-user">Add User</span>
                 </button>
               </CardHeader>
@@ -250,69 +295,69 @@ const [madrassaId, setMadrassaId] = useState();
           <ModalBody>
             <Row>
               <Col md={6}>
-            <div className="mb-3">
-              <Label htmlFor="username" data-key="username">Username <span className="text-danger">*</span></Label>
-              <Input
-                id="username"
-                name="username"
-                type="text"
-                value={validation.values.username}
-                onChange={validation.handleChange}
-                onBlur={validation.handleBlur}
-                invalid={validation.touched.username && !!validation.errors.username}
-              />
-              <FormFeedback>{validation.errors.username}</FormFeedback>
-            </div>
-</Col>
-<Col md={6}>
-            <div className="mb-3">
-              <Label htmlFor="email" data-key="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={validation.values.email}
-                onChange={validation.handleChange}
-              />
-            </div>
-            </Col>
+                <div className="mb-3">
+                  <Label htmlFor="username" data-key="username">Username <span className="text-danger">*</span></Label>
+                  <Input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value={validation.values.username}
+                    onChange={validation.handleChange}
+                    onBlur={validation.handleBlur}
+                    invalid={validation.touched.username && !!validation.errors.username}
+                  />
+                  <FormFeedback>{validation.errors.username}</FormFeedback>
+                </div>
+              </Col>
+              <Col md={6}>
+                <div className="mb-3">
+                  <Label htmlFor="email" data-key="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={validation.values.email}
+                    onChange={validation.handleChange}
+                  />
+                </div>
+              </Col>
             </Row>
             <Row>
               <Col md={6}>
-            {/* {!isEdit && ( */}
-              <div className="mb-3">
-                <Label htmlFor="password" data-key="password">Password <span className="text-danger">*</span></Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={validation.values.password}
-                  onChange={validation.handleChange}
-                  invalid={validation.touched.password && !!validation.errors.password}
-                />
-                <FormFeedback>{validation.errors.password}</FormFeedback>
-              </div>
-            {/* )} */}
-          </Col>
-          <Col md={6}>
-            <div className="mb-3">
-              <Label htmlFor="role" data-key="role">Role <span className="text-danger">*</span></Label>
-              <Select
-                id="role"
-                name="role"
-                classNamePrefix="select"
-                value={
-                  roleOptions.find(opt => opt.value === validation.values.role) || roleOptions[0]
-                }
-                onChange={selected => validation.setFieldValue("role", selected ? selected.value : "0")}
-                // onBlur={() => validation.setFieldTouched("role", true)}
-                options={roleOptions}
-                placeholder="Select Role"
-              />
-
-
-            </div>
-            </Col>
+                {/* {!isEdit && ( */}
+                <div className="mb-3">
+                  <Label htmlFor="password" data-key="password">Password <span className="text-danger">*</span></Label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={validation.values.password}
+                    onChange={validation.handleChange}
+                    invalid={validation.touched.password && !!validation.errors.password}
+                  />
+                  <FormFeedback>{validation.errors.password}</FormFeedback>
+                </div>
+                {/* )} */}
+              </Col>
+              <Col md={6}>
+                <div className="mb-3">
+                  <Label htmlFor="roles" data-key="roles">Roles <span className="text-danger">*</span></Label>
+                  <Select
+                    id="roles"
+                    name="roles"
+                    isMulti
+                    classNamePrefix="select"
+                    value={selectedRoles}
+                    onChange={(selected) => {
+                      const selectedValues = selected ? selected.map(option => option.value) : [];
+                      validation.setFieldValue("roles", selectedValues);
+                    }}
+                    options={roleOptions}
+                    placeholder="Select Roles"
+                    closeMenuOnSelect={false}
+                  />
+                </div>
+              </Col>
             </Row>
           </ModalBody>
           <ModalFooter>
