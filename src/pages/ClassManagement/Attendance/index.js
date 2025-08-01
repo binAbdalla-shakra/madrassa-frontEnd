@@ -56,31 +56,53 @@ const AttendancePage = () => {
     setIsLoading(true);
     try {
       // Fetch students
-      const studentsRes = await fetch(`${API_URL.API_URL}/students`);
-      const studentsData = await studentsRes.json();
-    //   if (studentsData.success) {
-       
-    //   }
-setStudents(
-  studentsData.data
-    .filter(student => student.isActive) // Only include active students
-    .map(s => ({
-      value: s._id,
-      label: s.name,
-      ...s
-    }))
-);
+      const response = await fetch(`${API_URL.API_URL}/attendance/teacher-groups/students/${authUser?.data?.user._id}`);
+      const groupsData = await response.json();
+
+      // Flatten all students from all groups into a single array
+      const studentsData = {
+        success: groupsData.success,
+        data: groupsData.data.flatMap(group =>
+          group.students.map(student => ({
+            ...student,
+            groupId: group.groupId,
+            groupName: group.groupName
+          })))
+      };
+
+      //   if (studentsData.success) {
+
+      //   }
+      setStudents(
+        studentsData.data
+          .filter(student => !student.leaveDate) // Only active students (no leaveDate)
+          .map(student => ({
+            value: student.studentId,
+            label: student.name,
+            ...student
+          }))
+      );
+
+      // setStudents(
+      //   studentsData.data
+      //     .filter(student => student.isActive) // Only include active students
+      //     .map(student => ({
+      //       value: student._id,
+      //       label: `${student.name}`, // Include roll number in label
+      //       ...student
+      //     }))
+      // );
       // Fetch teachers
       const teachersRes = await fetch(`${API_URL.API_URL}/teachers`);
       const teachersData = await teachersRes.json();
-    //   if (teachersData.success) {
-      
-    //   }
+      //   if (teachersData.success) {
+
+      //   }
       setTeachers(teachersData.data.map(t => ({
-          value: t._id,
-          label: t.name,
-          ...t
-        })));
+        value: t._id,
+        label: t.name,
+        ...t
+      })));
 
       // Fetch attendance records
       await fetchAttendance();
@@ -179,7 +201,7 @@ setStudents(
   const handleBulkStatusChange = (studentId, status) => {
     setBulkData(prev => ({
       ...prev,
-      records: prev.records.map(r => 
+      records: prev.records.map(r =>
         r.student_id === studentId ? { ...r, status } : r
       )
     }));
@@ -189,12 +211,12 @@ setStudents(
   const handleBulkNotesChange = (studentId, notes) => {
     setBulkData(prev => ({
       ...prev,
-      records: prev.records.map(r => 
+      records: prev.records.map(r =>
         r.student_id === studentId ? { ...r, notes } : r
       )
     }));
   };
-   const authUser = JSON.parse(sessionStorage.getItem("authUser"));
+  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
   // Submit single attendance
   const handleSubmitSingle = async (e) => {
     e.preventDefault();
@@ -308,21 +330,21 @@ setStudents(
     <div className="page-content">
       <Container fluid>
         <BreadCrumb title="Attendance Management" pageTitle="Academics" />
-        
+
         <Row className="justify-content-center">
           <Col lg={12}>
             <Card className="default-card-wrapper">
               <CardHeader className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">Attendance Records</h5>
                 <div>
-                  <Button 
-                    color="primary" 
+                  <Button
+                    color="primary"
                     className="me-2"
                     onClick={openSingleModal}
                   >
                     <i className="ri-user-add-line me-1"></i> Single Entry
                   </Button>
-                  <Button 
+                  <Button
                     color="success"
                     onClick={openBulkModal}
                   >
@@ -330,7 +352,7 @@ setStudents(
                   </Button>
                 </div>
               </CardHeader>
-              
+
               <CardBody>
                 <Row className="mb-3">
                   <Col md={2}>
@@ -382,8 +404,8 @@ setStudents(
                     />
                   </Col>
                   <Col md={2} className="d-flex align-items-end">
-                    <Button 
-                      color="primary" 
+                    <Button
+                      color="primary"
                       onClick={fetchAttendance}
                       disabled={isLoading}
                     >
@@ -391,7 +413,7 @@ setStudents(
                     </Button>
                   </Col>
                 </Row>
-                
+
                 <div className="table-responsive">
                   <Table hover className="mb-0">
                     <thead>
@@ -446,7 +468,7 @@ setStudents(
                   </Table>
                 </div>
               </CardBody>
-              
+
               <CardFooter className="d-flex justify-content-between">
                 <div className="text-muted">
                   Showing {attendanceRecords.length} records
@@ -572,7 +594,7 @@ setStudents(
                 </FormGroup> */}
               </Col>
             </Row>
-            
+
             <div className="table-responsive mt-3">
               <Table hover>
                 <thead>
@@ -586,7 +608,7 @@ setStudents(
                 <tbody>
                   {bulkData.records.map((record, index) => (
                     <tr key={record.student_id}>
-                        <td>{++index}</td>
+                      <td>{++index}</td>
                       <td>{record.name}</td>
                       <td>
                         <Input
@@ -623,7 +645,7 @@ setStudents(
           </ModalFooter>
         </Form>
       </Modal>
-      
+
       <ToastContainer limit={1} closeButton={false} />
     </div>
   );

@@ -62,14 +62,33 @@ const LessonsPage = () => {
     setIsLoading(true);
     try {
       // Fetch students
-      const studentsRes = await fetch(`${API_URL.API_URL}/students`);
-      const studentsData = await studentsRes.json();
-      setStudents(studentsData.data .filter(student => student.isActive) // Only include active students
-        .map(s => ({
-        value: s._id,
-        label: s.name,
-        ...s
-      })));
+      // Fetch students
+      const response = await fetch(`${API_URL.API_URL}/attendance/teacher-groups/students/${authUser?.data?.user._id}`);
+      const groupsData = await response.json();
+
+      // Flatten all students from all groups into a single array
+      const studentsData = {
+        success: groupsData.success,
+        data: groupsData.data.flatMap(group =>
+          group.students.map(student => ({
+            ...student,
+            groupId: group.groupId,
+            groupName: group.groupName
+          })))
+      };
+
+      //   if (studentsData.success) {
+
+      //   }
+      setStudents(
+        studentsData.data
+          .filter(student => !student.leaveDate) // Only active students (no leaveDate)
+          .map(student => ({
+            value: student.studentId,
+            label: student.name,
+            ...student
+          }))
+      );
 
       // Fetch teachers
       const teachersRes = await fetch(`${API_URL.API_URL}/teachers`);
@@ -103,7 +122,7 @@ const LessonsPage = () => {
   // Fetch ayahs for selected surah
   const fetchAyahs = async (surahNumber) => {
     if (!surahNumber) return;
-    
+
     try {
       const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}`);
       const data = await res.json();
@@ -111,11 +130,11 @@ const LessonsPage = () => {
         const ayahOptions = data.data.ayahs.map(ayah => ({
           value: ayah.numberInSurah,
           label: ayah.text
-        //   text: ayah.text
+          //   text: ayah.text
         }));
-        
+
         setAyahs(ayahOptions);
-        
+
         // Update modal data with surah name
         // setModal(prev => ({
         //   ...prev,
@@ -233,7 +252,7 @@ const LessonsPage = () => {
         to_ayah: selectedOption ? selectedOption.numberOfAyahs : 1
       }
     }));
-    
+
     if (selectedOption) {
       fetchAyahs(selectedOption.value);
     } else {
@@ -272,12 +291,12 @@ const LessonsPage = () => {
 
     setIsLoading(true);
     try {
-      const url = modal.mode === 'create' 
-        ? `${API_URL.API_URL}/lessons` 
+      const url = modal.mode === 'create'
+        ? `${API_URL.API_URL}/lessons`
         : `${API_URL.API_URL}/lessons/${modal.data._id}`;
-      
+
       const method = modal.mode === 'create' ? 'POST' : 'PUT';
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -313,29 +332,29 @@ const LessonsPage = () => {
   }, [filters]);
 
 
-// Add this function to check if to_ayah is the last ayah
-const isLastAyah = () => {
-  if (!modal.data?.surah_number || !ayahs.length) return false;
-  const lastAyah = ayahs[ayahs.length - 1].value;
-  return modal.data.to_ayah === lastAyah;
-};
-useEffect(() => {
-  if (
-    modal.data?.surah_number &&
-    modal.data?.to_ayah &&
-    ayahs.length
-  ) {
+  // Add this function to check if to_ayah is the last ayah
+  const isLastAyah = () => {
+    if (!modal.data?.surah_number || !ayahs.length) return false;
     const lastAyah = ayahs[ayahs.length - 1].value;
-    const shouldBeConcluded = modal.data.to_ayah === lastAyah;
+    return modal.data.to_ayah === lastAyah;
+  };
+  useEffect(() => {
+    if (
+      modal.data?.surah_number &&
+      modal.data?.to_ayah &&
+      ayahs.length
+    ) {
+      const lastAyah = ayahs[ayahs.length - 1].value;
+      const shouldBeConcluded = modal.data.to_ayah === lastAyah;
 
-    if (modal.data.is_concluded !== shouldBeConcluded) {
-      setModal(prev => ({
-        ...prev,
-        data: { ...prev.data, is_concluded: shouldBeConcluded }
-      }));
+      if (modal.data.is_concluded !== shouldBeConcluded) {
+        setModal(prev => ({
+          ...prev,
+          data: { ...prev.data, is_concluded: shouldBeConcluded }
+        }));
+      }
     }
-  }
-}, [modal.data?.to_ayah, modal.data?.surah_number, ayahs]);
+  }, [modal.data?.to_ayah, modal.data?.surah_number, ayahs]);
 
 
 
@@ -343,20 +362,20 @@ useEffect(() => {
     <div className="page-content">
       <Container fluid>
         <BreadCrumb title="Quran Lessons" pageTitle="Academics" />
-        
+
         <Row className="justify-content-center">
           <Col lg={12}>
             <Card className="default-card-wrapper">
               <CardHeader className="d-flex justify-content-between align-items-center">
                 <h5 className="mb-0">Lesson Records</h5>
-                <Button 
-                  color="primary" 
+                <Button
+                  color="primary"
                   onClick={() => openModal('create')}
                 >
                   <i className="ri-add-line me-1"></i> New Lesson
                 </Button>
               </CardHeader>
-              
+
               <CardBody>
                 <Row className="mb-3">
                   <Col md={2}>
@@ -417,9 +436,9 @@ useEffect(() => {
                       placeholder="All statuses"
                     />
                   </Col>
-                    <Col md={2} className="d-flex align-items-end">
-                    <Button 
-                      color="primary" 
+                  <Col md={2} className="d-flex align-items-end">
+                    <Button
+                      color="primary"
                       onClick={fetchLessons}
                       disabled={isLoading}
                     >
@@ -441,9 +460,9 @@ useEffect(() => {
                       <option value="false">No</option>
                     </Input>
                   </Col> */}
-                
+
                 </Row>
-                
+
                 <div className="table-responsive">
                   <Table hover className="mb-0">
                     <thead>
@@ -484,8 +503,8 @@ useEffect(() => {
                               </Badge>
                             </td>
                             <td>
-                              <Button 
-                                color="light" 
+                              <Button
+                                color="light"
                                 size="sm"
                                 onClick={() => openModal('edit', lesson)}
                               >
@@ -509,7 +528,7 @@ useEffect(() => {
                   </Table>
                 </div>
               </CardBody>
-              
+
               <CardFooter className="d-flex justify-content-between">
                 <div className="text-muted">
                   Showing {lessons.length} records
@@ -629,30 +648,30 @@ useEffect(() => {
               </Col>
               <Col md={12}>
                 <FormGroup check className="mb-3">
-                    <Label check>
+                  <Label check>
                     <Input
-                        type="checkbox"
-                        name="is_concluded"
-                        checked={modal.data?.is_concluded || false}
-                        // onChange={(e) => {
-                        // if (!isLastAyah()) {
-                        //     setModal(prev => ({
-                        //     ...prev,
-                        //     data: { ...prev.data, is_concluded: e.target.checked }
-                        //     }));
-                        // }
-                        // }}
-                        className="me-2"
-                        style={{ width: '18px', height: '18px' }}
-                        disabled
+                      type="checkbox"
+                      name="is_concluded"
+                      checked={modal.data?.is_concluded || false}
+                      // onChange={(e) => {
+                      // if (!isLastAyah()) {
+                      //     setModal(prev => ({
+                      //     ...prev,
+                      //     data: { ...prev.data, is_concluded: e.target.checked }
+                      //     }));
+                      // }
+                      // }}
+                      className="me-2"
+                      style={{ width: '18px', height: '18px' }}
+                      disabled
                     />
                     <span style={{ fontSize: '16px', verticalAlign: 'middle' }}>
-                        Is Lesson Concluded? {isLastAyah() && "(Auto-concluded for last ayah)"}
+                      Is Lesson Concluded? {isLastAyah() && "(Auto-concluded for last ayah)"}
                     </span>
-                    </Label>
+                  </Label>
                 </FormGroup>
-                </Col>
-              <Col md={12} style={{display:"none"}}>
+              </Col>
+              <Col md={12} style={{ display: "none" }}>
                 <FormGroup>
                   <Label>Homework Assigned</Label>
                   <Input
@@ -702,7 +721,7 @@ useEffect(() => {
           </ModalFooter>
         </Form>
       </Modal>
-      
+
       <ToastContainer limit={1} closeButton={false} />
     </div>
   );
