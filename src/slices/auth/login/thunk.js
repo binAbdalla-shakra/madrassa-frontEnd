@@ -27,7 +27,17 @@ export const loginUser = (user, history) => async (dispatch) => {
     } else if (data.status === "success") {
       // Success: save user, dispatch, redirect
       sessionStorage.setItem("authUser", JSON.stringify(data));
-      history('/dashboard');
+      // console.log("sss", data?.user)
+      if (data?.user?._id === "687b2c74205cd4f205f640b6") {
+        history('/dashboard');
+
+      }
+      else {
+        // console.log("dddd")
+        history('/group-lessons');
+
+
+      }
     } else {
       // Unexpected shape of response
       toast.error("Unexpected response from server.", { position: "top-right" });
@@ -37,6 +47,7 @@ export const loginUser = (user, history) => async (dispatch) => {
     return data;  // ← Always return the data to caller
 
   } catch (error) {
+    // console.log("error:", error.message)
     toast.error("Network error or server unavailable.", { position: "top-right" });
     dispatch(apiError(error.message || "Network error"));
     return { status: "error", error: error.message || "Network error" };
@@ -46,9 +57,9 @@ export const loginUser = (user, history) => async (dispatch) => {
 export const logoutUser = () => async (dispatch) => {
   try {
     sessionStorage.removeItem("authUser");
-   
+
     dispatch(logoutUserSuccess(true));
-    
+
 
   } catch (error) {
     dispatch(apiError(error));
