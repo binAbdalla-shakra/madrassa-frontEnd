@@ -21,9 +21,11 @@ const LessonsPage = () => {
   const [surahs, setSurahs] = useState([]);
   const [ayahs, setAyahs] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
+
   const [filters, setFilters] = useState({
     student: '',
-    teacher: '',
+    teacher: authUser?.data?.user._id,
     surah: '',
     status: '',
     startDate: moment().format('YYYY-MM-DD'),
@@ -49,8 +51,7 @@ const LessonsPage = () => {
       status: 'completed'
     }
   });
-  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
-
+  
   // Status options
   const statusOptions = [
     { value: 'completed', label: 'Completed', color: 'success' },
