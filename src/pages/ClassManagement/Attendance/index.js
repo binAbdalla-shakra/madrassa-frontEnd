@@ -118,9 +118,9 @@ const AttendancePage = () => {
   const fetchAttendance = async () => {
     setIsLoading(true);
     try {
-      let url = `${API_URL.API_URL}/attendance?start_date=${filters.startDate}&end_date=${filters.endDate}`;
+      let url = `${API_URL.API_URL}/attendance?start_date=${filters.startDate}&end_date=${filters.endDate}&teacher_id=${authUser?.data?.user._id}`;
       if (filters.student) url += `&student_id=${filters.student}`;
-      if (filters.teacher) url += `&teacher_id=${filters.teacher}`;
+    //  if (filters.teacher) url += `&teacher_id=${filters.teacher}`;
       if (filters.status) url += `&status=${filters.status}`;
 
       const response = await fetch(url);
