@@ -19,9 +19,10 @@ const AttendancePage = () => {
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+    const authUser = JSON.parse(sessionStorage.getItem("authUser"));
   const [filters, setFilters] = useState({
     student: '',
-    teacher: '',
+    teacher: authUser?.data?.user._id,
     status: '',
     startDate: moment().format('YYYY-MM-DD'),
     endDate: moment().format('YYYY-MM-DD')
