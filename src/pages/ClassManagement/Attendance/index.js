@@ -217,7 +217,7 @@ const AttendancePage = () => {
       )
     }));
   };
-  const authUser = JSON.parse(sessionStorage.getItem("authUser"));
+  //const authUser = JSON.parse(sessionStorage.getItem("authUser"));
   // Submit single attendance
   const handleSubmitSingle = async (e) => {
     e.preventDefault();
