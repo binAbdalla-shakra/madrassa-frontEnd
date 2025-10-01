@@ -108,9 +108,14 @@ const Dashboard = () => {
     fetchData();
   }, [selectedMonth]);
 
+//  const formatDate = (date) => {
+  //  return date.toISOString().split('T')[0];
+ // };
+
   const formatDate = (date) => {
-    return date.toISOString().split('T')[0];
-  };
+  return date.toLocaleDateString('en-CA'); // outputs 'YYYY-MM-DD'
+};
+
 
   // Prepare data for the fees chart (selected month)
 const getFeesChartData = () => {
