@@ -50,32 +50,25 @@ const Sidebar = ({ layoutType }) => {
             <span className="logo-sm">
               <img src={madrassaLogo} alt="" height="22" />
             </span>
-          <span className="logo-lg">
-             <span
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '50%',
-                width: '100px',
-                height: '100px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
-                boxShadow: '0 0 5px rgba(0,0,0,0.2)',
-                marginTop: '10px'
-              }}
-            >
-              <img
-                src={madrassaLogo}
-                alt="Madrassa Logo"
+            <span className="logo-lg">
+              <span
                 style={{
-                  height: '100%',
-                  paddingBottom: "14px",
-                  width: '100%',
-                  objectFit: 'cover'
+                  height: '110px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  marginTop: '10px',
+                  marginBottom: '10px'
                 }}
-              />
-            </span>
+              >
+                <div className="col-auto">
+                  <div className="avatar-lg">
+                    <img src={madrassaLogo} alt="user-img"
+                      className="img-thumbnail rounded-circle" />
+                  </div>
+                </div>
+              </span>
 
             </span>
 

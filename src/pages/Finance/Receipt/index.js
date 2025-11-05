@@ -161,7 +161,7 @@ const ReceiptPage = () => {
   // Submit new receipt
   const handleSubmitReceipt = async (e) => {
     e.preventDefault();
-
+    setIsLoading(true);
     if (!validateForm()) return;
     newReceipt.receivedBy = authUser?.data?.user.username || "admin";
     try {
@@ -189,8 +189,10 @@ const ReceiptPage = () => {
       } else {
         toast.error(data.message || "Failed to create receipt");
       }
+      setIsLoading(false);
     } catch (error) {
       toast.error("Error creating receipt: " + error.message);
+      setIsLoading(false);
     }
   };
 
@@ -427,22 +429,6 @@ const ReceiptPage = () => {
                   <div className="text-danger small mt-1">{validationErrors.paymentMethod}</div>
                 )}
               </Col>
-
-              {/* <Col md={6} className="mb-3">
-                <Label>Received By</Label>
-                <Input
-                  type="text"
-                  name="receivedBy"
-                  value={newReceipt.receivedBy}
-                  onChange={handleReceiptChange}
-                  invalid={!!validationErrors.receivedBy}
-                  placeholder="Enter staff name"
-                />
-                {validationErrors.receivedBy && (
-                  <div className="text-danger small mt-1">{validationErrors.receivedBy}</div>
-                )}
-              </Col> */}
-
               <Col md={12} className="mb-3">
                 <Label>Notes</Label>
                 <Input

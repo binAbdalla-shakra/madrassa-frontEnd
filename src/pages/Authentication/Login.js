@@ -10,48 +10,48 @@ import 'react-toastify/dist/ReactToastify.css';
 import ParticlesAuth from "../AuthenticationInner/ParticlesAuth";
 // actions
 import { loginUser } from "../../slices/thunks";
-import logoLight from "../../assets/images/madrassa-logo-one.png";
+import logoLight from "../../assets/images/albasair.png";
 const Login = (props) => {
-  const dispatch = useDispatch();
-  const [passwordShow, setPasswordShow] = useState(false);
-  const [loading, setLoading] = useState(false);
+    const dispatch = useDispatch();
+    const [passwordShow, setPasswordShow] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-  // Redux user state
-  const { user, error } = useSelector(state => state.Login || {});
+    // Redux user state
+    const { user, error } = useSelector(state => state.Login || {});
 
-  // Formik setup
-  const validation = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-    },
-    validationSchema: Yup.object({
-      username: Yup.string().required("Please Enter Your Username"),
-      password: Yup.string().required("Please Enter Your Password"),
-    }),
-    onSubmit: async (values) => {
-      setLoading(true);
-      try {
-        await dispatch(loginUser(values, props.router.navigate));
-        setLoading(false);
-      } catch (err) {
-        setLoading(false);
-        toast.error("Login failed. Please check your username and password.", { position: "top-right" });
-      }
-    },
-  });
+    // Formik setup
+    const validation = useFormik({
+        initialValues: {
+            username: '',
+            password: '',
+        },
+        validationSchema: Yup.object({
+            username: Yup.string().required("Please Enter Your Username"),
+            password: Yup.string().required("Please Enter Your Password"),
+        }),
+        onSubmit: async (values) => {
+            setLoading(true);
+            try {
+                await dispatch(loginUser(values, props.router.navigate));
+                setLoading(false);
+            } catch (err) {
+                setLoading(false);
+                toast.error("Login failed. Please check your username and password.", { position: "top-right" });
+            }
+        },
+    });
 
-  // Handle Redux error changes
-  useEffect(() => {
-    if (error) {
-      toast.error(error, { position: "top-right" });
-      setLoading(false);
-    }
-  }, [error]);
+    // Handle Redux error changes
+    useEffect(() => {
+        if (error) {
+            toast.error(error, { position: "top-right" });
+            setLoading(false);
+        }
+    }, [error]);
 
-  document.title = "Madrassa";
+    document.title = "Madrassa";
 
-   return (
+    return (
         <React.Fragment>
             <ParticlesAuth>
                 <div className="auth-page-content mt-lg-5">
@@ -60,11 +60,25 @@ const Login = (props) => {
                             <Col lg={12}>
                                 <div className="text-center mt-sm-5 mb-4 text-white-50">
                                     <div>
-                                        <Link to="/" className="d-inline-block auth-logo">
-                                            <img src={logoLight} alt="" width="187" height="100" />
-                                        </Link>
+                                        <span className="logo-lg">
+                                            <span
+                                                style={{
+                                                    height: '80px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    marginTop: '22px',
+                                                }}
+                                            >
+                                                <div className="col-auto">
+                                                    <div className="avatar-lg">
+                                                        <img src={logoLight} alt="user-img"
+                                                            className="img-thumbnail rounded-circle" />
+                                                    </div>
+                                                </div>
+                                            </span> </span>
                                     </div>
-                                    <p className="mt-3 fs-15 fw-medium">Premium Admin & Dashboard Madrassa System</p>
+                                    <p className="mt-3 fs-15 fw-medium">ALBASAIR البصائر</p>
                                 </div>
                             </Col>
                         </Row>
@@ -148,14 +162,14 @@ const Login = (props) => {
                                     </CardBody>
                                 </Card>
 
-                              
+
 
                             </Col>
                         </Row>
                     </Container>
                 </div>
             </ParticlesAuth>
-            <ToastContainer/>
+            <ToastContainer />
         </React.Fragment>
     );
 };
