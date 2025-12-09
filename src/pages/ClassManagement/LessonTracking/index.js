@@ -101,15 +101,25 @@ const LessonsPage = () => {
       })));
 
       // Fetch all Surahs from AlQuran Cloud API
-      const surahsRes = await fetch('https://api.alquran.cloud/v1/surah');
-      const surahsData = await surahsRes.json();
-      if (surahsData.code === 200) {
-        setSurahs(surahsData.data.map(s => ({
-          value: s.number,
-          label: `${s.number}. ${s.name}`,
-          ...s
-        })));
-      }
+      // const surahsRes = await fetch('https://api.alquran.cloud/v1/surah');
+      // const surahsData = await surahsRes.json();
+      // if (surahsData.code === 200) {
+      //   setSurahs(surahsData.data.map(s => ({
+      //     value: s.number,
+      //     label: `${s.number}. ${s.name}`,
+      //     ...s
+      //   })));
+      // }
+      const surahsRes = await fetch('https://api.quran.com/api/v4/chapters');
+const surahsData = await surahsRes.json();
+if (surahsData.chapters) { // Check for the 'chapters' key
+  setSurahs(surahsData.chapters.map(s => ({
+    value: s.id, // Use 'id' for the Surah number
+    // Use 'name_arabic' for the Arabic script name
+    label: `${s.id}. ${s.name_arabic}`, 
+    ...s
+  })));
+}
 
       // Fetch lessons
       await fetchLessons();
@@ -120,38 +130,83 @@ const LessonsPage = () => {
     }
   };
 
-  // Fetch ayahs for selected surah
-  const fetchAyahs = async (surahNumber) => {
+  // // Fetch ayahs for selected surah
+  // const fetchAyahs = async (surahNumber) => {
+  //   if (!surahNumber) return;
+
+  //   try {
+  //     const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}`);
+  //     const data = await res.json();
+  //     if (data.code === 200) {
+  //       const ayahOptions = data.data.ayahs.map(ayah => ({
+  //         value: ayah.numberInSurah,
+  //         label: ayah.text
+  //         //   text: ayah.text
+  //       }));
+
+  //       setAyahs(ayahOptions);
+
+  //       // Update modal data with surah name
+  //       // setModal(prev => ({
+  //       //   ...prev,
+  //       //   data: {
+  //       //     ...prev.data,
+  //       //     surah_name: data.data.englishName,
+  //       //     from_ayah: 1,
+  //       //     to_ayah: ayahOptions.length > 0 ? ayahOptions[ayahOptions.length - 1].value : 1
+  //       //   }
+  //       // }));
+  //     }
+  //   } catch (error) {
+  //     toast.error("Error loading ayahs: " + error.message);
+  //   }
+  // };
+// Fetch ayahs for selected surah using the reliable Quran.com API
+const fetchAyahs = async (surahNumber) => {
     if (!surahNumber) return;
 
+    // 1. Define API endpoints
+    // Endpoint for Ayahs (verses) - requires per_page=500 to get all verses
+    const versesUrl = `https://api.quran.com/api/v4/verses/by_chapter/${surahNumber}?language=en&words=false&per_page=500&fields=text_uthmani`;
+    // Endpoint for Chapter (Surah) metadata - used to get the name
+    // const chapterUrl = `https://api.quran.com/api/v4/chapters/${surahNumber}`;
+
     try {
-      const res = await fetch(`https://api.alquran.cloud/v1/surah/${surahNumber}`);
-      const data = await res.json();
-      if (data.code === 200) {
-        const ayahOptions = data.data.ayahs.map(ayah => ({
-          value: ayah.numberInSurah,
-          label: ayah.text
-          //   text: ayah.text
+        // --- A. Fetch Verses Data ---
+        const versesRes = await fetch(versesUrl);
+        if (!versesRes.ok) throw new Error('Failed to fetch verses data.');
+        const versesData = await versesRes.json();
+        
+        // --- B. Fetch Chapter/Surah Metadata ---
+        // const chapterRes = await fetch(chapterUrl);
+        // if (!chapterRes.ok) throw new Error('Failed to fetch chapter metadata.');
+        // const chapterData = await chapterRes.json();
+
+        // --- C. Process and Map Ayahs ---
+        const ayahsList = versesData.verses || [];
+        const ayahOptions = ayahsList.map(ayah => ({
+            // value is the verse number within the Surah
+            value: ayah.verse_number, 
+            // label is the Arabic text in Uthmani script
+            label: ayah.text_uthmani 
         }));
 
+        // Set the processed Ayahs for your state
         setAyahs(ayahOptions);
 
-        // Update modal data with surah name
-        // setModal(prev => ({
-        //   ...prev,
-        //   data: {
-        //     ...prev.data,
-        //     surah_name: data.data.englishName,
-        //     from_ayah: 1,
-        //     to_ayah: ayahOptions.length > 0 ? ayahOptions[ayahOptions.length - 1].value : 1
-        //   }
-        // }));
-      }
-    } catch (error) {
-      toast.error("Error loading ayahs: " + error.message);
-    }
-  };
+        // --- D. Update Modal Data (using new field names) ---
+        // const surahMetadata = chapterData.chapter || {};
+        // const lastAyahNumber = ayahsList.length > 0 
+        //     ? ayahsList[ayahsList.length - 1].verse_number 
+        //     : 1;
 
+  
+    } catch (error) {
+        // Use toast.error if it's available in your environment
+        // toast.error("Error loading ayahs: " + error.message);
+        console.error("Error loading ayahs:", error.message);
+    }
+};
   // Fetch lessons with filters
   const fetchLessons = async () => {
     setIsLoading(true);
