@@ -298,14 +298,15 @@ const fetchAyahs = async (surahNumber) => {
 
   // Handle surah selection change
   const handleSurahChange = (selectedOption) => {
+    console.log("fhgkjdhgddhdflkdjflhj:",selectedOption ? selectedOption.name_simple);
     setModal(prev => ({
       ...prev,
       data: {
         ...prev.data,
         surah_number: selectedOption ? selectedOption.value : '',
-        surah_name: selectedOption ? selectedOption.name_arabic : '',
+        surah_name: selectedOption ? selectedOption.name_simple : '',
         from_ayah: 1,
-        to_ayah: selectedOption ? selectedOption.numberOfAyahs : 1
+        to_ayah: selectedOption ? selectedOption.verses_count : 1
       }
     }));
 
