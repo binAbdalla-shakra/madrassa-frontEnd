@@ -303,7 +303,7 @@ const fetchAyahs = async (surahNumber) => {
       data: {
         ...prev.data,
         surah_number: selectedOption ? selectedOption.value : '',
-        surah_name: selectedOption ? selectedOption.name : '',
+        surah_name: selectedOption ? selectedOption.name_arabic : '',
         from_ayah: 1,
         to_ayah: selectedOption ? selectedOption.numberOfAyahs : 1
       }
